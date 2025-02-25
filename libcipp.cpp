@@ -1,24 +1,15 @@
-#include <iostream>
-#include <cstdlib>
-#include <string>
-#include <args.hxx>
-#include <filesystem>
-#include <fstream>
-#include <map>
+
+#include "libcipp.h"
 
 #define MAX_WRITE 1000 //limits the numbers of characters you can write at once to any config files
 
 using namespace std;
 
-class CippRepository {
     
         
-    public:
-        filesystem::path worktree;
-        filesystem::path gitdir;
-        unordered_map<string, map<string, string>> conf;
+    
 
-        static CippRepository repo_find(filesystem::path path=".", bool required=true){
+        CippRepository CippRepository::repo_find(filesystem::path path=".", bool required=true){
             path = filesystem::absolute(path);
 
             if(filesystem::is_directory(path/".git")){
@@ -33,7 +24,7 @@ class CippRepository {
             return repo_find(parent_path, required);
         }
 
-        static filesystem::path repo_path(CippRepository repo, filesystem::path path){
+        static filesystem::path CippRepository::repo_path(CippRepository repo, filesystem::path path){
             return repo.gitdir/path;
         }
 
@@ -42,7 +33,7 @@ class CippRepository {
         said location if specified by the parameters*/
 
         
-        static filesystem::path  repo_dir(filesystem::path project_path, filesystem::path dir_path, bool mkdir=false){
+        filesystem::path  CippRepository::repo_dir(filesystem::path project_path, filesystem::path dir_path, bool mkdir=false){
             auto path = project_path/dir_path;
             if(filesystem::exists(path)){
                 if(filesystem::is_directory(path)){
@@ -60,7 +51,7 @@ class CippRepository {
             }
         }
 
-        static CippRepository createRepo(filesystem::path path){
+        CippRepository CippRepository::createRepo(filesystem::path path){
 
             CippRepository repo = CippRepository(path, true);
 
@@ -106,7 +97,7 @@ class CippRepository {
 
 
         /*Constructor that inits a working repo on the supplied directory*/
-        CippRepository(filesystem::path path, bool force = false){
+        CippRepository::CippRepository(filesystem::path path, bool force = false){
             this->worktree = path;
             
             this->gitdir = worktree / ".git";
@@ -144,14 +135,12 @@ class CippRepository {
 
         }
 
-    private:
-        /*Takes a local path for the repository, and returns the
-        system path by appending it to the repo path*/
-        filesystem::path repo_file(filesystem::path local_path){
+        
+        filesystem::path CippRepository::repo_file(filesystem::path local_path){
             return worktree / local_path;
         }
 
-        void readConfig(filesystem::path configPath) {
+        void CippRepository::readConfig(filesystem::path configPath) {
             std::ifstream file(configPath);
             if (!file) {
                 throw std::runtime_error("Failed to open config file");
@@ -173,14 +162,14 @@ class CippRepository {
                 }
             }
         }
-        std::string trim(const std::string& str) {
+        std::string CippRepository::trim(const std::string& str) {
             size_t first = str.find_first_not_of(" \t");
             if (first == std::string::npos) return "";
             size_t last = str.find_last_not_of(" \t");
             return str.substr(first, (last - first + 1));
         }
 
-        static void write_config(ofstream& writer, unordered_map<string, unordered_map<string, string>> config){
+        void CippRepository::write_config(ofstream& writer, unordered_map<string, unordered_map<string, string>> config){
             for(auto it : config){
                 writer << "[" << it.first.c_str() << "]" << endl;
                 for(auto pairs : it.second){
@@ -190,7 +179,7 @@ class CippRepository {
         }
 
         /*Creates the default configuration map for a new repository*/
-        static unordered_map<string, unordered_map<string, string>> default_config(){
+        unordered_map<string, unordered_map<string, string>> CippRepository::default_config(){
             unordered_map<string, unordered_map<string, string>> ret;
             ret["core"]["repositoryformatversion"] = "0";
             ret["core"]["filemode"] = "false";
@@ -200,3 +189,4 @@ class CippRepository {
 
 
 };
+

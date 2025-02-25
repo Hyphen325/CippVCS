@@ -27,7 +27,9 @@ int main(int argc, char **argv){
             filesystem::path local_path =  filesystem::current_path();
             CippRepository::createRepo(local_path);
         }
-        if()
+        if(add){
+            
+        }
     }
     
     catch (const args::Help)

@@ -21,9 +21,7 @@ This project is a simple recreation of some basic Git functionalities using C++.
     git clone https://github.com/Hyphen325/CippVCS
     ```
 2. Navigate to the project directory:
-    ```sh
     
-    ```
 3.  Execute the project binary with commands
     ```sh
     cipp init
@@ -54,12 +52,9 @@ This project is a simple recreation of some basic Git functionalities using C++.
     ```
 
 
-## License
-
-This project is licensed under the MIT License. 
-
 ## Acknowledgements
 
 - Inspired by the original Git project
-- Thanks to all contributors
+- Adapted from wyag 
+
 
