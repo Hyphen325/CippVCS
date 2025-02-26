@@ -14,6 +14,7 @@
 #include <vector>
 #include <openssl/sha.h>
 
+
 using namespace std;
 
 
@@ -57,23 +58,7 @@ class CippRepository {
 
 };
 
-class CippObject {
-    public:
 
-        CippObject(char*, int);
-        CippObject();
-
-        virtual void serialize(CippRepository);
-        
-        virtual void deserialize(CippRepository);
-
-    private:
-        vector<unsigned char> object_read(CippRepository, string);
-
-        string object_write(CippRepository, CippObject, vector<unsigned char>);
-
-        string sha1(const string& );
-};
 
 
 
