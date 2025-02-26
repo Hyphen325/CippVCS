@@ -5,7 +5,7 @@ using namespace args;
 
 
 int cat_file_cmd(string, string);
-int hash_object_cmd(string, string, vector<FlagBase*>);
+int hash_object_cmd(string, vector<FlagBase*>);
 
 
 

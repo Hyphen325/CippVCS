@@ -19,8 +19,8 @@ CippRepository CippRepository::repo_find(filesystem::path path=".", bool require
     return repo_find(parent_path, required);
 }
 
-filesystem::path CippRepository::repo_path(CippRepository repo, filesystem::path path){
-    return repo.gitdir/path;
+filesystem::path CippRepository::repo_path(filesystem::path path){
+    return gitdir/path;
 }
 
 
@@ -92,8 +92,6 @@ CippRepository::CippRepository(filesystem::path path, bool force){
     this->worktree = path;
     this->gitdir = worktree / ".git";
 
-    
-
     if(!(force || filesystem::is_directory(path))){
         throw(runtime_error("Not a git repotitory "));
     }
@@ -111,7 +109,6 @@ CippRepository::CippRepository(filesystem::path path, bool force){
         for(auto it1: conf){
             auto it2 = it1.second.find("repositoryformatversion");
             if(it2 != it1.second.end()){
-                cout << "Repository format version: " << it2->second << endl;
                 int vers = stoi(it2->second);
                 flag = false;
                 if(vers != 0){
@@ -155,6 +152,7 @@ void CippRepository::readConfig(filesystem::path configPath) {
     }
     file.close();
 }
+
 std::string CippRepository::trim(const std::string& str) {
     size_t first = str.find_first_not_of(" \t");
     if (first == std::string::npos) return "";

@@ -21,7 +21,7 @@ class CippRepository {
         /*Finds the repository in the specified path, and returns the repository object*/
         static CippRepository repo_find(filesystem::path, bool);
         /*Returns the path of the .git folder in the desired repo*/
-        static filesystem::path repo_path(CippRepository, filesystem::path);
+        filesystem::path repo_path(filesystem::path);
         /*Returns an error if the specified path is not a directory, and creates a directory at
         said location if specified by the parameters*/
         static filesystem::path  repo_dir(filesystem::path, filesystem::path, bool);

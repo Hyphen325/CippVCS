@@ -59,7 +59,7 @@ string CippObject::object_write(CippRepository repo, CippObject obj, vector<unsi
 
     string sha = CippObject::sha1(string(data.begin(), data.end()));
 
-    filesystem::path path = repo.repo_file("objects")/sha.substr(0,2)/sha.substr(2);
+    filesystem::path path = repo.repo_path("objects")/sha.substr(0,2)/sha.substr(2);
     if(filesystem::exists(path)){
         return sha;
     }
@@ -93,7 +93,7 @@ string CippObject::sha1(const string& input) {
 
 string CippObject::object_hash(filesystem::path input, string type, CippRepository repo){
     ifstream file(input, ios::binary);
-    if(!input){
+    if(!file){
         throw runtime_error("Failed to open file");
     }
 
@@ -104,20 +104,22 @@ string CippObject::object_hash(filesystem::path input, string type, CippReposito
     vector<unsigned char> buffer(size);
     file.read(reinterpret_cast<char*> (buffer.data()), size);
     file.close();
+    
+    string sha;
+    if(type == "blob"){
+        CippBlob obj = CippBlob(reinterpret_cast<const char*>(string(buffer.begin(), buffer.end()).c_str()), size);
+        vector<unsigned char> blob_data = obj.serialize();
+        sha = CippObject::object_write(repo, obj, blob_data);
+    }
 
-    CippBlob blob = CippBlob(reinterpret_cast<char*>(string(buffer.front(), buffer.end()).c_str()), size);
-    vector<unsigned char> blob_data = blob.serialize();
-    string sha = CippBlob::object_write(repo, blob, blob_data);
+    
     return sha;
 }
 
 
-
-
-
 /*Blob Class*/
 /*---------------------------------------------------------------------------------*/
-CippBlob::CippBlob(char* data, int size){
+CippBlob::CippBlob(const char* data, int size){
     blob_data = vector<unsigned char>(data, data + size);
 }
 
