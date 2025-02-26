@@ -1,4 +1,16 @@
 #include "cippObject.h"
+using namespace std;
+
+/*Object Class*/
+/*---------------------------------------------------------------------------------*/
+
+vector<unsigned char> CippObject::serialize() {
+    
+    return vector<unsigned char>();
+}
+
+void CippObject::deserialize(vector<unsigned char> data) {
+}
 
 vector<unsigned char> CippObject::object_read(CippRepository repo, string sha){
     filesystem::path path = repo.repo_file("objects")/sha.substr(0,2)/sha.substr(2);
@@ -63,6 +75,10 @@ string CippObject::object_write(CippRepository repo, CippObject obj, vector<unsi
     return sha;
 }
 
+string CippObject::object_find(CippRepository repo, string name){
+    return name;
+}
+
 string CippObject::sha1(const string& input) {
     unsigned char hash[SHA_DIGEST_LENGTH];  
     SHA1(reinterpret_cast<const unsigned char*>(input.c_str()), input.size(), hash);
@@ -74,6 +90,30 @@ string CippObject::sha1(const string& input) {
     }
     return ss.str();
 }
+
+
+
+
+
+/*Blob Class*/
+/*---------------------------------------------------------------------------------*/
+CippBlob::CippBlob(char* data, int size){
+    blob_data = vector<unsigned char>(data, data + size);
+}
+
+CippBlob::CippBlob(){
+    blob_data = vector<unsigned char>();
+}
+
+vector<unsigned char> CippBlob::serialize(){
+    return blob_data;
+}
+
+void CippBlob::deserialize(vector<unsigned char> data){
+    blob_data = data;
+}
+
+
 
 
 

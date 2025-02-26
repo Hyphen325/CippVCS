@@ -1,5 +1,3 @@
-#include "libcipp.h"
-
 #define MAX_WRITE 1000 //limits the numbers of characters you can write at once to any config files
 
 using namespace std;

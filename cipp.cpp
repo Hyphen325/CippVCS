@@ -1,8 +1,8 @@
-#include "libcipp.h"
-
+#include "src/libcipp.h"
 
 using namespace std;
 using namespace args;
+
 
 int main(int argc, char **argv){
     ArgumentParser parser("This is a git clone program.", "This is after the options");
@@ -11,6 +11,12 @@ int main(int argc, char **argv){
     Command init(commands, "init", "initializes the repo");
     Command add(commands, "add", "adds file to be staged");
     Command commit(commands, "commit", "Creates a new commit");
+
+    /*cat-file command with it's potitional arguments*/
+    Command cat_file(commands, "cat-file", "Provide content of repository objects");
+    Group cat_file_flags(cat_file, "flags");
+    Positional<string> cat_file_type(cat_file_flags, "type", "The type of object to display");
+    Positional<string> cat_file_object(cat_file_flags, "object", "The object to display");
     
 
     Group arguments(parser, "arguments", Group::Validators::DontCare, Options::Global);
@@ -24,8 +30,8 @@ int main(int argc, char **argv){
             filesystem::path local_path =  filesystem::current_path();
             CippRepository::createRepo(local_path);
         }
-        if(add){
-            
+        if(cat_file){
+            cat_file_cmd(cat_file_type.Get(), cat_file_object.Get());
         }
     }
     

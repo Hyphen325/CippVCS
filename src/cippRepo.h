@@ -1,19 +1,10 @@
-
-#ifndef LIBCIPP_H
-/*Includes the Library containing the class for initialization*/
-#define LIBCIPP_H
-
-#include <iostream>
-#include <cstdlib>
+#include <unordered_map>
 #include <string>
-#include "dependencies/args.hxx"
-#include <filesystem>
 #include <fstream>
-#include <map>
-#include <zlib.h>
-#include <vector>
-#include <openssl/sha.h>
-
+#include <filesystem>
+#ifndef CIPP_REPO_H
+/*Includes the Library containing the class for initialization*/
+#define CIPP_REPO_H
 
 using namespace std;
 
@@ -21,6 +12,10 @@ using namespace std;
 
 class CippRepository {
     public:
+
+        filesystem::path worktree;
+        filesystem::path gitdir;
+        unordered_map<string, unordered_map<string, string>> conf;
 
         filesystem::path repo_file(filesystem::path );
         /*Finds the repository in the specified path, and returns the repository object*/
@@ -37,10 +32,6 @@ class CippRepository {
         CippRepository(filesystem::path, bool force = false);
 
     private:
-
-        filesystem::path worktree;
-        filesystem::path gitdir;
-        unordered_map<string, map<string, string>> conf;
 
         /*Takes a local path for the repository, and returns the
         system path by appending it to the repo path*/
@@ -60,7 +51,7 @@ class CippRepository {
 
 
 
-
+#include "cippRepo.cpp"
 
 #endif
 

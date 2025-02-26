@@ -1,25 +1,25 @@
+#include "libcipp.h"
 
 #ifndef CIPP_OBJECT_H
 #define CIPP_OBJECT_H
-#include "../libcipp.h"
 
+using namespace std;
 
 class CippObject {
     public:
 
-        CippObject(char*, int);
-        CippObject();
-
-        virtual void serialize(CippRepository);
         
-        virtual void deserialize(CippRepository);
 
-    private:
-        vector<unsigned char> object_read(CippRepository, string);
+        virtual vector<unsigned char> serialize();
+        virtual void deserialize(vector<unsigned char>);
 
-        string object_write(CippRepository, CippObject, vector<unsigned char>);
+        static vector<unsigned char> object_read(CippRepository, string);
+        static string object_write(CippRepository, CippObject, vector<unsigned char>);
+        static string object_find(CippRepository, string);
+        static string sha1(const string& );
 
-        string sha1(const string& );
+    
+        
 };
 
 class CippBlob : public CippObject{
@@ -27,12 +27,12 @@ class CippBlob : public CippObject{
         CippBlob(char*, int);
         CippBlob();
 
-        void serialize(CippRepository) override;
+        vector<unsigned char> serialize() override;
         
-        void deserialize(CippRepository) override;
+        void deserialize(vector<unsigned char>) override;
 
     private:
-        vector<unsigned char> blog_data;
+        vector<unsigned char> blob_data;
         
 
    
@@ -40,4 +40,9 @@ class CippBlob : public CippObject{
         
 };
 
+#include "cippObject.cpp"
+
+
+
 #endif 
+
