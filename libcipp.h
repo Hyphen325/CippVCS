@@ -12,6 +12,7 @@
 #include <map>
 #include <zlib.h>
 #include <vector>
+#include <openssl/sha.h>
 
 using namespace std;
 
@@ -69,7 +70,9 @@ class CippObject {
     private:
         vector<unsigned char> object_read(CippRepository, string);
 
-        char* object_write(CippRepository, char*, char*, int);
+        string object_write(CippRepository, CippObject, vector<unsigned char>);
+
+        string sha1(const string& );
 };
 
 

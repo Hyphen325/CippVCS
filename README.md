@@ -23,10 +23,9 @@ This project is a simple recreation of some basic Git functionalities using C++.
     ```
 2. Navigate to the project directory:
     
-3.  Execute the project binary with commands
+3.  Build the project binary with the following command
     ```sh
-    cipp init
-    cipp add
+    g++ *.cpp -o cipp -lz -lcrypto
     ```
 
 ## Usage
