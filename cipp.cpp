@@ -47,7 +47,7 @@ int main(int argc, char **argv){
     catch (const args::ParseError& e)
     {
         std::cerr << e.what() << std::endl;
-        std::cerr << parser;
+        
         return 1;
     }
     return 0;

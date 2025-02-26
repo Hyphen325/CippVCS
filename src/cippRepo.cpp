@@ -10,9 +10,9 @@ CippRepository CippRepository::repo_find(filesystem::path path=".", bool require
         return CippRepository(path);
     }
 
-    filesystem::path parent_path = path/"..";
+    filesystem::path parent_path = path.parent_path();
     if(parent_path == path){
-        throw runtime_error("No git directory");
+        throw runtime_error("Not in a git directory");
     }
 
     return repo_find(parent_path, required);
