@@ -1,5 +1,4 @@
-
-#include "libcipp.cpp"
+#include "libcipp.h"
 
 
 using namespace std;
@@ -16,8 +15,6 @@ int main(int argc, char **argv){
 
     Group arguments(parser, "arguments", Group::Validators::DontCare, Options::Global);
     HelpFlag help(parser, "help", "Display this help menu", {"h","help"});
-
-
 
     CompletionFlag completion(parser, {"complete"});
     try

@@ -25,9 +25,6 @@ filesystem::path CippRepository::repo_path(CippRepository repo, filesystem::path
 }
 
 
-
-
-
 filesystem::path  CippRepository::repo_dir(filesystem::path project_path, filesystem::path dir_path, bool mkdir=false){
     auto path = project_path/dir_path;
     if(filesystem::exists(path)){
@@ -88,7 +85,6 @@ CippRepository CippRepository::createRepo(filesystem::path path){
 
 
 }
-
 
 
 /*Constructor that inits a working repo on the supplied directory*/
@@ -180,6 +176,42 @@ unordered_map<string, unordered_map<string, string>> CippRepository::default_con
     ret["core"]["filemode"] = "false";
     ret["core"]["bare"] = "false";
     return ret;
+}
+
+vector<unsigned char> CippObject::object_read(CippRepository repo, string sha){
+    filesystem::path path = repo.repo_file("objects")/sha.substr(0,2)/sha.substr(2);
+    if(!filesystem::exists(path)){
+        throw runtime_error("Object does not exist");
+    }
+    ifstream input(path, ios::binary);
+    if(!input){
+        throw runtime_error("Failed to open object file");
+    }
+
+    input.seekg(0, ios::end);
+    unsigned long size = input.tellg();
+    input.seekg(0, ios::beg);
+
+    vector<unsigned char> buffer(size);
+    input.read(reinterpret_cast<char*> (buffer.data()), size);
+    input.close();
+
+    unsigned long uncompressed_size = 4 * size;
+    vector<unsigned char> data(uncompressed_size);
+
+    int result;
+    while(result = uncompress(reinterpret_cast<Bytef*> (data.data()), &uncompressed_size, buffer.data(), size) == Z_BUF_ERROR){
+        uncompressed_size *= 2;
+        data.resize(uncompressed_size);
+    }
+
+    if(result != Z_OK){
+        throw runtime_error("Failed to decompress object");
+    }
+
+    data.resize(uncompressed_size);
+    return data;
+
 }
 
 

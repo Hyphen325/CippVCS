@@ -10,6 +10,8 @@
 #include <filesystem>
 #include <fstream>
 #include <map>
+#include <zlib.h>
+#include <vector>
 
 using namespace std;
 
@@ -17,8 +19,8 @@ using namespace std;
 
 class CippRepository {
     public:
-        
 
+        filesystem::path repo_file(filesystem::path );
         /*Finds the repository in the specified path, and returns the repository object*/
         static CippRepository repo_find(filesystem::path, bool);
         /*Returns the path of the .git folder in the desired repo*/
@@ -40,7 +42,6 @@ class CippRepository {
 
         /*Takes a local path for the repository, and returns the
         system path by appending it to the repo path*/
-        filesystem::path repo_file(filesystem::path );
 
         void readConfig(filesystem::path );
 
@@ -66,7 +67,7 @@ class CippObject {
         virtual void deserialize(CippRepository);
 
     private:
-        vector<char*> object_read(CippRepository, char*);
+        vector<unsigned char> object_read(CippRepository, string);
 
         char* object_write(CippRepository, char*, char*, int);
 };

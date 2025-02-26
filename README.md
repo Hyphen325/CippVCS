@@ -13,6 +13,7 @@ This project is a simple recreation of some basic Git functionalities using C++.
 
 - C++ compiler (e.g., g++)
 - CMake (optional, for building the project)
+- zlib
 
 ### Installation
 
