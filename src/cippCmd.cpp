@@ -35,7 +35,15 @@ int hash_object_cmd(string object, vector<FlagBase*> flags){
         cout << "Must provide a file" << endl;
         return 1;
     }
+
+    vector<string> flag_values;
     
+    for(auto flag: flags){
+        cout << flag->Name() << endl;
+        flag->
+        cout << "Value" << "" << endl;
+        flag_values.clear();
+    }
 
     string type = "blob";
 

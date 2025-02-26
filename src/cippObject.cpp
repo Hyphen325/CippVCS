@@ -13,7 +13,7 @@ void CippObject::deserialize(vector<unsigned char> data) {
 }
 
 vector<unsigned char> CippObject::object_read(CippRepository repo, string sha){
-    filesystem::path path = repo.repo_file("objects")/sha.substr(0,2)/sha.substr(2);
+    filesystem::path path = repo.repo_path("objects")/sha.substr(0,2)/sha.substr(2);
     if(!filesystem::exists(path)){
         throw runtime_error("Object does not exist");
     }
@@ -134,10 +134,4 @@ vector<unsigned char> CippBlob::serialize(){
 void CippBlob::deserialize(vector<unsigned char> data){
     blob_data = data;
 }
-
-
-
-
-
-
 
