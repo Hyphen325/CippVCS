@@ -7,6 +7,7 @@ CippRepository CippRepository::repo_find(filesystem::path path=".", bool require
     path = filesystem::absolute(path);
 
     if(filesystem::is_directory(path/".git")){
+        cout << "Found git directory" << endl;
         return CippRepository(path);
     }
 
@@ -44,6 +45,7 @@ filesystem::path  CippRepository::repo_dir(filesystem::path project_path, filesy
 CippRepository CippRepository::createRepo(filesystem::path path){
 
     CippRepository repo = CippRepository(path, true);
+
 
     if(filesystem::exists(repo.worktree)){
         if(!filesystem::is_directory(repo.worktree)){
@@ -88,27 +90,28 @@ CippRepository CippRepository::createRepo(filesystem::path path){
 /*Constructor that inits a working repo on the supplied directory*/
 CippRepository::CippRepository(filesystem::path path, bool force){
     this->worktree = path;
-    
     this->gitdir = worktree / ".git";
+
     
 
     if(!(force || filesystem::is_directory(path))){
         throw(runtime_error("Not a git repotitory "));
     }
 
-    filesystem::path configPath = repo_file("config");
+    filesystem::path configPath = repo_file(".git/config");
 
     if(!configPath.empty() && filesystem::exists(configPath)){
         readConfig(configPath);
     } else if(!force){
-        throw runtime_error("Config file missing");
+        throw runtime_error("Config file missing during repository initialization");
     }
 
     if(!force) {
         bool flag = true;
         for(auto it1: conf){
-            auto it2 = it1.second.find("core.repositoryformatversion");
+            auto it2 = it1.second.find("repositoryformatversion");
             if(it2 != it1.second.end()){
+                cout << "Repository format version: " << it2->second << endl;
                 int vers = stoi(it2->second);
                 flag = false;
                 if(vers != 0){
@@ -119,7 +122,7 @@ CippRepository::CippRepository(filesystem::path path, bool force){
         if(flag){
             throw runtime_error("Missing reporitory format version in config file");
         }
-}
+    }
 
 
 }
@@ -142,7 +145,7 @@ void CippRepository::readConfig(filesystem::path configPath) {
         }
         if (line.front() == '[' && line.back() == ']') {
             currentSection = line.substr(1, line.size() - 2);
-        } else {
+        } else if (!currentSection.empty()) {
             std::istringstream iss(line);
             std::string key, value;
             if (std::getline(iss, key, '=') && std::getline(iss, value)) {
@@ -150,6 +153,7 @@ void CippRepository::readConfig(filesystem::path configPath) {
             }
         }
     }
+    file.close();
 }
 std::string CippRepository::trim(const std::string& str) {
     size_t first = str.find_first_not_of(" \t");
