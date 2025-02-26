@@ -91,6 +91,26 @@ string CippObject::sha1(const string& input) {
     return ss.str();
 }
 
+string CippObject::object_hash(filesystem::path input, string type, CippRepository repo){
+    ifstream file(input, ios::binary);
+    if(!input){
+        throw runtime_error("Failed to open file");
+    }
+
+    file.seekg(0, ios::end);
+    unsigned long size = file.tellg();
+    file.seekg(0, ios::beg);
+
+    vector<unsigned char> buffer(size);
+    file.read(reinterpret_cast<char*> (buffer.data()), size);
+    file.close();
+
+    CippBlob blob = CippBlob(reinterpret_cast<char*>(string(buffer.front(), buffer.end()).c_str()), size);
+    vector<unsigned char> blob_data = blob.serialize();
+    string sha = CippBlob::object_write(repo, blob, blob_data);
+    return sha;
+}
+
 
 
 

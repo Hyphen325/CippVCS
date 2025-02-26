@@ -16,7 +16,7 @@ class CippObject {
         static vector<unsigned char> object_read(CippRepository, string);
         static string object_write(CippRepository, CippObject, vector<unsigned char>);
         static string object_find(CippRepository, string);
-        static string object_hash(CippObject);
+        static string object_hash(filesystem::path, string, CippRepository repo = nullptr);
         static string sha1(const string& );
 
     
@@ -34,11 +34,7 @@ class CippBlob : public CippObject{
 
     private:
         vector<unsigned char> blob_data;
-        
-
-   
-
-        
+          
 };
 
 #include "cippObject.cpp"
