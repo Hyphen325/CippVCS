@@ -21,13 +21,4 @@
 
 #include "cippCmd.h"
 
-
-
-
-
-
-
-
-
-
 #endif // LIBCIPP_H

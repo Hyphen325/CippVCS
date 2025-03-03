@@ -14,9 +14,9 @@ class CippObject {
         virtual void deserialize(vector<unsigned char>);
 
         static vector<unsigned char> object_read(CippRepository, string);
-        static string object_write(CippRepository, CippObject, vector<unsigned char>);
-        static string object_find(CippRepository, string);
-        static string object_hash(filesystem::path, string, CippRepository);
+        static string object_write(CippRepository&, CippObject, vector<unsigned char>, bool);
+        static string object_find(CippRepository&, string);
+        static string object_hash(filesystem::path, string, CippRepository&, bool = false);
         static string sha1(const string& );
 
         

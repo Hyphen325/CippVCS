@@ -28,7 +28,7 @@ class CippRepository {
         /*Creates a new repository at the specified path*/
         static CippRepository createRepo(filesystem::path path);
 
-
+        CippRepository();
         CippRepository(filesystem::path, bool force = false);
 
     private:

@@ -7,7 +7,6 @@ CippRepository CippRepository::repo_find(filesystem::path path=".", bool require
     path = filesystem::absolute(path);
 
     if(filesystem::is_directory(path/".git")){
-        cout << "Found git directory" << endl;
         return CippRepository(path);
     }
 
@@ -86,11 +85,18 @@ CippRepository CippRepository::createRepo(filesystem::path path){
 
 }
 
+CippRepository::CippRepository(){
+    worktree = "";
+    gitdir = "";
+    conf = unordered_map<string, unordered_map<string, string>>();
+}
 
 /*Constructor that inits a working repo on the supplied directory*/
 CippRepository::CippRepository(filesystem::path path, bool force){
     this->worktree = path;
     this->gitdir = worktree / ".git";
+
+
 
     if(!(force || filesystem::is_directory(path))){
         throw(runtime_error("Not a git repotitory "));
