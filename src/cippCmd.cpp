@@ -40,7 +40,6 @@ int hash_object_cmd(string object, vector<FlagBase*> flags){
     
     for(auto flag: flags){
         cout << flag->Name() << endl;
-        flag->
         cout << "Value" << "" << endl;
         flag_values.clear();
     }

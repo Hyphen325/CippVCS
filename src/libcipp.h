@@ -49,6 +49,7 @@ Group arguments(parser, "arguments", Group::Validators::DontCare, Options::Globa
 HelpFlag help(parser, "help", "Display this help menu", {"h","help"});
 
 
+
 CompletionFlag completion(parser, {"complete"});
 
 
