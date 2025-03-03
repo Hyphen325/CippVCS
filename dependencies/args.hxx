@@ -814,6 +814,11 @@ namespace args
                 return options;
             }
 
+            void SetOptions(Options options_) noexcept
+            {
+                options = options_;
+            }
+
             bool IsRequired() const noexcept
             {
                 return (GetOptions() & Options::Required) != Options::None;
@@ -3211,7 +3216,9 @@ namespace args
     class HelpFlag : public Flag
     {
         public:
-            HelpFlag(Group &group_, const std::string &name_, const std::string &help_, Matcher &&matcher_, Options options_ = {}): Flag(group_, name_, help_, std::move(matcher_), options_) {}
+            HelpFlag(Group &group_, const std::string &name_, const std::string &help_, Matcher &&matcher_, Options options_ = {}): Flag(group_, name_, help_, std::move(matcher_), options_) {
+                SetOptions(options_);
+            }
 
             virtual ~HelpFlag() {}
 

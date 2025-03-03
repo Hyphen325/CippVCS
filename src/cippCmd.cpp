@@ -2,10 +2,6 @@
 
 using namespace args;
 
-extern ArgumentParser parser;
-
-extern Flag hash_object_write;
-extern ValueFlag<string> hash_object_path;
 
 int cat_file_cmd(string type, string object){
     if(type.empty() || object.empty()){
