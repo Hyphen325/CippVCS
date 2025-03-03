@@ -1,4 +1,4 @@
-#include "cippObject.h"
+#include "CippObject.h"
 using namespace std;
 
 /*Object Class*/
@@ -94,7 +94,7 @@ string CippObject::sha1(const string& input) {
     return ss.str();
 }
 
-string CippObject::object_hash(filesystem::path input, string type, CippRepository& repo, bool write_enable){
+string CippObject::object_hash(filesystem::path input, CippObjectType obj_type, CippRepository& repo, bool write_enable){
     ifstream file(input, ios::binary);
     if(!file){
         throw runtime_error("Failed to open file");
@@ -112,6 +112,9 @@ string CippObject::object_hash(filesystem::path input, string type, CippReposito
     string sha;
     
     //TODO: Implement other object types, uses default of blob right now
+    if(obj_type != BLOB){
+        throw runtime_error("Object type not implemented");
+    }
     CippBlob obj = CippBlob(reinterpret_cast<const char*>(string(buffer.begin(), buffer.end()).c_str()), size);
     vector<unsigned char> blob_data = obj.serialize();
     
@@ -122,22 +125,65 @@ string CippObject::object_hash(filesystem::path input, string type, CippReposito
     return sha;
 }
 
+/** This function is recursive: it reads a key/value pair, then call
+ * itself back with the new position. We need to know, where we are at,
+ * a keyword, or already in the message
+ */
+map<vector<uint8_t>, vector<uint8_t>> CippObject::kvlm_parse(vector<uint8_t>& data, map<vector<uint8_t>, vector<uint8_t>>& kvlm,  int start){
+    
+    //finds the next space and the next newline based off start
+    //if space is before newline, then we are in the key, otherwise its the final message
+    auto it_space = find(data.begin() + start, data.end(), ' ');
+    auto it_newln = find(data.begin() + start, data.end(), '\n');
 
-/*Blob Class*/
-/*---------------------------------------------------------------------------------*/
-CippBlob::CippBlob(const char* data, int size){
-    blob_data = vector<unsigned char>(data, data + size);
+    //base case for if we have reached the end of the commit object/kvlm
+    if (it_newln < it_space || it_space == data.end()) {
+        //assigns empty vector to map to the rest of the data
+        kvlm[vector<uint8_t>()] = vector<uint8_t>(data.begin() + start, data.end());
+        return kvlm;
+    }
+
+    auto key = vector<uint8_t>(data.begin() + start, it_space);
+
+    auto end = data.begin() + start;
+    //finds the end of the pgp signature
+    //VERIFY THIS WORKS
+    while(true){
+        end = find(end, data.end(), '\n');
+        if(*(end+1) != ' ') break;
+    }
+
+    //copies the values out of the kvlm and trims the extra spaces inside of multi line values
+    vector<uint8_t> value = vector<uint8_t>(it_space + 1, end);
+    for(auto it = value.begin(); it != value.end(); it++){
+        if(it != value.end()-1 && *it == '\n' && *(it+1) == ' '){
+            value.erase(it+1);
+        }
+    }
+
+    if (kvlm.find(key) != kvlm.end()){
+        //append the value to the existing key
+        kvlm[key].insert(kvlm[key].end(), value.begin(), value.end());
+    }else{
+        //create a new key
+        kvlm[key] = value;
+    }
+
+    return kvlm_parse(data, kvlm, end - data.begin() + 1);
 }
 
-CippBlob::CippBlob(){
-    blob_data = vector<unsigned char>();
-}
-
-vector<unsigned char> CippBlob::serialize(){
-    return blob_data;
-}
-
-void CippBlob::deserialize(vector<unsigned char> data){
-    blob_data = data;
+//turns the map into a sequence of bytes in key value format according to kvlm
+vector<uint8_t> CippObject::kvlm_serialize(map<vector<uint8_t>, vector<uint8_t>> kvlm){
+    vector<uint8_t> data;
+    for(auto it = kvlm.begin(); it != kvlm.end(); it++){
+        if(it->first == vector<uint8_t>()) continue;
+        data.insert(data.end(), it->first.begin(), it->first.end());
+        data.push_back(' ');
+        data.insert(data.end(), it->second.begin(), it->second.end());
+        data.push_back('\n');
+    }
+    data.push_back('\n');
+    data.insert(data.end(), kvlm[vector<uint8_t>()].begin(), kvlm[vector<uint8_t>()].end());
+    return data;
 }
 

@@ -26,7 +26,7 @@ This project is a simple recreation of some basic Git functionalities using C++.
     
 3.  Build the project binary with the following command
     ```sh
-    g++  cipp.cpp -o cipp -lz -lcrypto
+    g++  cipp.cpp -o cipp -lz -lcrypto -g -Wall -Wextra
     ```
 
 ## Usage

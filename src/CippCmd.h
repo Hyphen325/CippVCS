@@ -9,7 +9,7 @@ int hash_object_cmd(string, vector<FlagBase*>);
 
 
 
-#include "cippCmd.cpp"
+#include "CippCmd.cpp"
 
 
 #endif // CIPP_CMD_H

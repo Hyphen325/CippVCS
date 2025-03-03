@@ -16,9 +16,9 @@
 #include "../dependencies/args.hxx"
 
 
-#include "cippRepo.h"
-#include "cippObject.h"
+#include "CippRepo.h"
+#include "CippObject/CippObject.h"
 
-#include "cippCmd.h"
+#include "CippCmd.h"
 
 #endif // LIBCIPP_H
