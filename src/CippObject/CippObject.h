@@ -45,6 +45,7 @@ class CippObject {
 #include "CippBlob.h"
 
 #include "CippCommit.h"
+#include "CippTree.h"
 
 #include "CippObject.cpp"
 

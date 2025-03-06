@@ -53,11 +53,11 @@ CippObject* CippObject::object_read(CippRepository& repo, string sha){
 
     // Extract size
     size_t null_pos = raw_str.find('\0', space_pos);
-    if (null_pos == string::npos) throw runtime_error("Malformed object: missing null terminator");
+    //if (null_pos == string::npos) throw runtime_error("Malformed object: missing null terminator");
     int size2 = stoi(raw_str.substr(space_pos + 1, null_pos - space_pos - 1));
 
     if (size2 != static_cast<int>(raw_str.size() - null_pos - 1)) {
-        throw runtime_error("Malformed object: bad length");
+        //throw runtime_error("Malformed object: bad length");
     }
 
     // Pick the appropriate constructor
@@ -137,6 +137,7 @@ string CippObject::object_hash(filesystem::path input, CippObjectType obj_type, 
     string sha;
     
     //TODO: Implement other object types, uses default of blob right now
+    cout << "type: " << obj_type << endl;
     if(obj_type != BLOB){
         throw runtime_error("Object type not implemented");
     }

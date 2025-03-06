@@ -101,8 +101,12 @@ void log_graphviz(CippRepository repo, string sha, set<string> seen = set<string
     }
     seen.insert(sha);
 
+    cout << "Reading" << endl;;
     auto commit = dynamic_cast<CippCommit*>(CippObject::object_read(repo, sha));
-    vector<uint8_t> message = commit->serialize();
+    if (commit == nullptr) {
+        cerr << "Error: Commit object is null" << endl;
+        return;
+    }    vector<uint8_t> message = commit->serialize();
     //Can be combined into one check for more efficient code
     for(auto it = message.begin(); it != message.end();it++){
         it = find(it, message.end(), 92);

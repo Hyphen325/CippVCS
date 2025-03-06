@@ -11,6 +11,7 @@
 #include <map>
 #include <set>
 #include <algorithm>
+#include <tuple>
 
 #include <zlib.h>
 #include <openssl/sha.h>
