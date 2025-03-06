@@ -6,6 +6,9 @@ using namespace args;
 
 int cat_file_cmd(string, string);
 int hash_object_cmd(string, vector<FlagBase*>);
+int log_cmd(string);
+
+void log_graphviz(CippRepository, string, set<string>);
 
 
 

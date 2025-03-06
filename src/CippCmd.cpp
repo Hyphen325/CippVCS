@@ -1,4 +1,7 @@
 #include "CippCmd.h"
+#include "CippObject/CippObject.h"
+#include "CippObject/CippCommit.h"
+#include "CippObject/CippBlob.h"
 
 using namespace args;
 
@@ -17,8 +20,9 @@ int cat_file_cmd(string type, string object){
     CippRepository repo = CippRepository::repo_find();
     cout << "Examining Characters" << endl;
     if(object == "blob"){
-        vector<unsigned char> blob = CippBlob::object_read(repo, CippBlob::object_find(repo, object));
-        cout << "Blob" <<  string(blob.begin(), blob.end()) << endl;
+        CippObject* blob = CippBlob::object_read(repo, CippBlob::object_find(repo, object));
+        vector<uint8_t> blob_text = blob->serialize();
+        cout << "Blob" <<  string(blob_text.begin(), blob_text.end()) << endl;
     }
 
     cout << "Type: " << type << endl;
@@ -51,7 +55,10 @@ int hash_object_cmd(string object, vector<FlagBase*> flags){
         }
     }
 
+    
+
     //defaults object and type to lowercase
+    cout << "Object: " << object << endl << "Type: " <<type<<endl;
     transform(object.begin(), object.end(), object.begin(), ::tolower);
     transform(type.begin(), type.end(), type.begin(), ::tolower);
 
@@ -78,5 +85,57 @@ int hash_object_cmd(string object, vector<FlagBase*> flags){
     cout << "Object: " << object << endl;
     return 0;
 }
+
+int log_cmd(string commit){
+    CippRepository repo = CippRepository::repo_find();
+
+    cout << "digraph cipplog{" << endl << "\t node[shape=rect]" << endl;
+    log_graphviz(repo, CippObject::object_find(repo, commit), set<string>());
+    cout << "}" << endl;
+
+}
+
+void log_graphviz(CippRepository repo, string sha, set<string> seen = set<string>()){
+    if(seen.find(sha) != seen.end()){
+        return;
+    }
+    seen.insert(sha);
+
+    auto commit = dynamic_cast<CippCommit*>(CippObject::object_read(repo, sha));
+    vector<uint8_t> message = commit->serialize();
+    //Can be combined into one check for more efficient code
+    for(auto it = message.begin(); it != message.end();it++){
+        it = find(it, message.end(), 92);
+        message.insert(it, 92);
+    }
+
+    for(auto it = message.begin(); it != message.end();it++){
+        it = find(it, message.end(), '\"');
+        message.insert(it, 92);   
+    }
+
+    vector<uint8_t>::iterator it = find(message.begin(), message.end(), '\n');
+    if(it != message.end()){
+        message.erase(it, message.end());
+    }
+
+    cout << "  c_" << sha << " [label=\"" << sha.substr(0,7) << ": " << string(message.begin(), message.end())
+    << "\"]" << endl;
+
+    if (commit->commit_data.find(vector<uint8_t>('parent')) == commit->commit_data.end()) return;
+
+    vector<uint8_t> parents = commit->commit_data[vector<uint8_t>('parent')];
+
+    for(auto p : parents){
+        cout << "  c_" << sha << " -> c_" << (char)p << ";" << endl;
+        log_graphviz(repo, string(1, (char)p), seen);
+    }
+
+
+}
+
+
+
+
 
 

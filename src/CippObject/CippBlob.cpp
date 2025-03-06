@@ -10,6 +10,10 @@ CippBlob::CippBlob(){
     blob_data = vector<unsigned char>();
 }
 
+CippBlob::CippBlob(const vector<uint8_t>& data){
+    blob_data = data;
+}
+
 vector<unsigned char> CippBlob::serialize(){
     return blob_data;
 }
@@ -17,3 +21,7 @@ vector<unsigned char> CippBlob::serialize(){
 void CippBlob::deserialize(vector<unsigned char> data){
     blob_data = data;
 }
+
+
+
+

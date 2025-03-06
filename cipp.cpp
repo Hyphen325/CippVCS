@@ -31,6 +31,15 @@ int main(int argc, char **argv){
     Flag hash_object_write(hash_object_flags, "w", "Write the object into the database", {'w'});
     ValueFlag<string> hash_object_path(hash_object_flags, "TYPE", "Specify the object type", {'t'});
 
+    /*Log command with it's positional arguments*/
+    Command log(commands, "log", "Display history of a given commit");
+    Group log_args(log, "args");
+    Group log_flags(log, "flags");
+    Positional<string> log_commit(log_args, "commit", "The commit to start at");
+
+    /*Log command Flags*/
+
+
     /*Global arguments*/
     Group arguments(parser, "arguments", Group::Validators::DontCare, Options::Global);
     HelpFlag help(parser, "help", "Display this help menu", {"h", "help"}, Options::Global);
@@ -49,6 +58,9 @@ int main(int argc, char **argv){
         }
         if(hash_object){
             hash_object_cmd(hash_object_file.Get(), hash_object_flags.GetAllFlags());
+        }
+        if(log){
+            log_cmd(log_commit.Get());
         }
     }
     
@@ -69,3 +81,4 @@ int main(int argc, char **argv){
     }
     return 0;
 }
+

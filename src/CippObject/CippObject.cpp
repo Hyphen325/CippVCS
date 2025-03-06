@@ -12,7 +12,7 @@ vector<unsigned char> CippObject::serialize() {
 void CippObject::deserialize(vector<unsigned char> data) {
 }
 
-vector<unsigned char> CippObject::object_read(CippRepository repo, string sha){
+CippObject* CippObject::object_read(CippRepository& repo, string sha){
     filesystem::path path = repo.repo_path("objects")/sha.substr(0,2)/sha.substr(2);
     if(!filesystem::exists(path)){
         throw runtime_error("Object does not exist");
@@ -43,11 +43,37 @@ vector<unsigned char> CippObject::object_read(CippRepository repo, string sha){
         throw runtime_error("Failed to decompress object");
     }
 
-    data.resize(uncompressed_size);
-    return data;
+    string raw_str(data.begin(), data.begin() + uncompressed_size);
+
+    // Extract object type
+    cout << "Raw string" << raw_str << endl;
+    size_t space_pos = raw_str.find(' ');
+    if (space_pos == string::npos) throw runtime_error("Malformed object: missing space");
+    string fmt = raw_str.substr(0, space_pos);
+
+    // Extract size
+    size_t null_pos = raw_str.find('\0', space_pos);
+    if (null_pos == string::npos) throw runtime_error("Malformed object: missing null terminator");
+    int size2 = stoi(raw_str.substr(space_pos + 1, null_pos - space_pos - 1));
+
+    if (size2 != static_cast<int>(raw_str.size() - null_pos - 1)) {
+        throw runtime_error("Malformed object: bad length");
+    }
+
+    // Pick the appropriate constructor
+    string content = raw_str.substr(null_pos + 1);
+    
+    if (fmt == "commit") return new CippCommit(vector<uint8_t>(content.begin(), content.end()));
+    //if (fmt == "tree")   return make_unique<CippTree>(content);
+    //if (fmt == "tag")    return make_unique<CippTag>(content);
+    if (fmt == "blob")   return new CippBlob(vector<uint8_t>(content.begin(), content.end()));
+
+    throw runtime_error("Unknown object type: " + fmt);
 
 }
-
+/** This function writes a an object file using the sha-1 has function. Objects are written into
+ * the objects folder in the .git directory
+ */
 string CippObject::object_write(CippRepository& repo, CippObject obj, vector<unsigned char> data, bool write_enable){
     unsigned long size = data.size();
     unsigned long compressed_size = compressBound(size);
@@ -86,7 +112,6 @@ string CippObject::sha1(const string& input) {
     unsigned char hash[SHA_DIGEST_LENGTH];  
     SHA1(reinterpret_cast<const unsigned char*>(input.c_str()), input.size(), hash);
 
-    
     stringstream ss;
     for (int i = 0; i < SHA_DIGEST_LENGTH; i++) {
         ss << hex << setw(2) << setfill('0') << (int)hash[i];
@@ -185,5 +210,10 @@ vector<uint8_t> CippObject::kvlm_serialize(map<vector<uint8_t>, vector<uint8_t>>
     data.push_back('\n');
     data.insert(data.end(), kvlm[vector<uint8_t>()].begin(), kvlm[vector<uint8_t>()].end());
     return data;
+}
+
+//returns the raw data inside the object
+vector<uint8_t> CippObject::get(){
+    return raw_data;
 }
 
