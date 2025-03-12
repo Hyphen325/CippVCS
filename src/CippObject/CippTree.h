@@ -26,10 +26,10 @@ public:
     
     static tuple<int, CippTreeLeaf> tree_parse_one(const vector<uint8_t>&, int);
     static vector<CippTreeLeaf> tree_parse(const vector<uint8_t>&);
-    static filesystem::path tree_leaf_sort_key(CippTreeLeaf&);
+    static bool tree_leaf_sort_key(CippTreeLeaf&, CippTreeLeaf&);
 
     
-private:
+
     vector<CippTreeLeaf> tree_data;
 };
 

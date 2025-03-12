@@ -30,7 +30,7 @@ class CippObject {
 
         static CippObject* object_read(CippRepository&, string);
         static string object_write(CippRepository&, CippObject, vector<unsigned char>, bool);
-        static string object_find(CippRepository&, string);
+        static string object_find(CippRepository&, string, CippObjectType);
         static string object_hash(filesystem::path, CippObjectType, CippRepository&, bool = false);
         static string sha1(const string& );      
 

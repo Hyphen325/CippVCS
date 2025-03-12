@@ -56,12 +56,17 @@ vector<CippTreeLeaf> CippTree::tree_parse(const vector<uint8_t>&data){
     return ret;
 
 }
-filesystem::path CippTree::tree_leaf_sort_key(CippTreeLeaf& leaf){
-    if(leaf.mode & (3 << 63) == 2){
-        return leaf.path;
-    }else{
-        return leaf.path / "/";
+bool CippTree::tree_leaf_sort_key(CippTreeLeaf& leaf1, CippTreeLeaf& leaf2){
+    // If leafs are directories, appends / after them so they do not sort before normal files
+    if(!(leaf1.mode & (3 << 63) == 2)){
+        leaf1.path/ "/";
     }
+
+    if(!(leaf2.mode & (3 << 63) == 2)){
+        leaf2.path/ "/";
+    }
+
+    return leaf1.path < leaf2.path;
 }
 
 vector<uint8_t> CippTree::serialize(){

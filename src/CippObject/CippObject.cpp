@@ -104,7 +104,7 @@ string CippObject::object_write(CippRepository& repo, CippObject obj, vector<uns
     return sha;
 }
 
-string CippObject::object_find(CippRepository& repo, string name){
+string CippObject::object_find(CippRepository& repo, string name, CippObjectType type = BLOB){
     return name;
 }
 

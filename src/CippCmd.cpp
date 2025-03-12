@@ -76,6 +76,8 @@ int hash_object_cmd(string object, vector<FlagBase*> flags){
         return 1;
     }
 
+    
+
     //hashes the file at the path
     string sha = CippBlob::object_hash(local_path, obj_type, repo, write_enable);
     cout << "SHA: " << sha << endl;
@@ -93,6 +95,55 @@ int log_cmd(string commit){
     log_graphviz(repo, CippObject::object_find(repo, commit), set<string>());
     cout << "}" << endl;
 
+}
+
+int ls_tree_cmd(string tree, vector<FlagBase*> flags){
+    if(tree.empty()) cout << "Must provide a tree" << endl; return 1;
+
+    vector<string> flag_values;
+    bool recursive = false;
+    // TODO: REFORMAT FOR USE WITH MANY FLAGS
+    for(auto flag: flags){
+        // -r flag
+        if(dynamic_cast<Flag*>(flag)){
+            Flag* f = dynamic_cast<Flag*>(flag);
+            if(f->Get()){
+                recursive = true;
+            }
+        }
+    }
+
+    CippRepository repo = CippRepository::repo_find();
+
+    ls_tree(repo, tree, recursive);
+}
+
+void ls_tree(CippRepository repo, string tree, bool recursive = false, filesystem::path path){
+    string sha = CippObject::object_find(repo, tree);
+    CippTree *obj = static_cast<CippTree*>(CippObject::object_read(repo, sha));
+
+    for(auto item : obj->tree_data){
+        uint64_t type;
+        if(item.mode&0xFFFFF){
+            type = item.mode&0xFF;
+        }else{
+            type = item.mode&0xF;
+        }
+        CippObjectType obj_type;
+        switch(type){
+            case 0x04 : obj_type = TREE; break;
+            case 0x10 : obj_type = BLOB; break;
+            case 0x12 : obj_type = BLOB; break;
+            case 0x16 : obj_type = COMMIT; break;
+            default : throw runtime_error("Weird tree leaf mode" + item.mode); break;
+        }
+
+        if(recursive && obj_type == TREE) {
+            ls_tree(repo, item.sha, recursive, path / item.path);
+        }else{
+            cout << (item.mode) <<"\t"<<  obj_type <<"\t"<<  item.sha<<"\t" << path/ item.path << endl;
+        }
+    }
 }
 
 void log_graphviz(CippRepository repo, string sha, set<string> seen = set<string>()){

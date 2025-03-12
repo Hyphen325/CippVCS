@@ -39,6 +39,14 @@ int main(int argc, char **argv){
 
     /*Log command Flags*/
 
+    /*ls tree command with its arguments*/
+    Command ls_tree(commands, "ls-tree", "Pretty-print a tree object");
+    Group ls_tree_args(ls_tree, "args");
+    Group ls_tree_flags(ls_tree, "flags");
+    Positional<string> ls_tree_tree(ls_tree_args, "tree", "A tree-ish object");
+
+    /*ls tree command flags*/
+    Flag ls_tree_recursive(ls_tree_flags, "r", "Recurse into sub-trees", {'r'});
 
     /*Global arguments*/
     Group arguments(parser, "arguments", Group::Validators::DontCare, Options::Global);
@@ -61,6 +69,10 @@ int main(int argc, char **argv){
         }
         if(log){
             log_cmd(log_commit.Get());
+        }
+        if(ls_tree){
+            ls_tree_cmd(ls_tree_tree.Get(), ls_tree_args.GetAllFlags());
+            
         }
     }
     
