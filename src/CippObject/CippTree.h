@@ -22,10 +22,11 @@ public:
    
     void deserialize(vector<uint8_t>) override;
     vector<uint8_t> serialize() override;
-
-    static tuple<int, CippTreeLeaf> tree_parse_one(vector<uint8_t>, int);
-    static vector<CippTreeLeaf> tree_parse(vector<uint8_t>);
-    static filesystem::path tree_leaf_sort_key(CippTreeLeaf);
+    
+    
+    static tuple<int, CippTreeLeaf> tree_parse_one(const vector<uint8_t>&, int);
+    static vector<CippTreeLeaf> tree_parse(const vector<uint8_t>&);
+    static filesystem::path tree_leaf_sort_key(CippTreeLeaf&);
 
     
 private:
