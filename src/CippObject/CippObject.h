@@ -5,7 +5,10 @@
 
 
 using namespace std;
+//type for commit object
 using kvlm_t = map<vector<uint8_t>, vector<uint8_t>>;
+//type for raw data (string of characters)
+using raw_t = vector<uint8_t>;
 
 enum CippObjectType{
     BLOB,
@@ -23,6 +26,8 @@ static const map<string, CippObjectType> object_type_map = {
 
 class CippObject {
     public:
+        /*String to identify object*/
+        string fmt;
 
         virtual vector<unsigned char> serialize();
         virtual void deserialize(vector<unsigned char>);

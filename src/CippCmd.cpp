@@ -112,10 +112,83 @@ int ls_tree_cmd(string tree, vector<FlagBase*> flags){
             }
         }
     }
+    
 
     CippRepository repo = CippRepository::repo_find();
 
     ls_tree(repo, tree, recursive);
+}
+
+int checkout_cmd(string commit, string path){
+    //checks if the provided arguments are empty
+    if(commit.empty() || path.empty()){
+        cout << "Must provide a commit and path" << endl; return 1;
+    }
+
+    //finds the repository in the local directory
+    CippRepository repo = CippRepository::repo_find();
+
+    //finds the object and instantiates it as a generic object type.
+    CippObject* obj = CippObject::object_read(repo, CippObject::object_find(repo, commit));
+
+    //if the object is a commit
+    if(dynamic_cast<CippCommit*>(obj)){
+        //gets the tree data from the kvlm inside the commit object
+        raw_t tree = (dynamic_cast<CippCommit*>(obj)->commit_data[raw_t(tree.begin(), tree.end())]);
+
+        //read the object to have the tree data (CHECK IF tree raw data is correct)
+        obj = CippObject::object_read(repo, string(tree.begin(), tree.end()));
+    }
+
+    if(filesystem::exists(path)){
+        if(!filesystem::is_directory(path)){
+            throw runtime_error("Not a directory");
+        }if(filesystem::is_empty(path)){
+            throw runtime_error("Not empty");
+        }
+    }else{
+        filesystem::create_directories(path);
+    }
+
+    tree_checkout(repo, obj, path);
+    
+}
+
+
+/** Helper function to call recursively. TODO: Refactor to not use so many dynamic casts
+* My entire polymorphism structure needs to be redone as it is very very messy
+*/
+void tree_checkout(CippRepository repo, CippObject* obj, filesystem::path path){
+    /*Converts the object to a tree*/
+    CippTree* tree = dynamic_cast<CippTree*>(obj);
+    if(!tree){
+        throw new runtime_error("Not a tree object");
+    }
+
+    for(auto leaf : tree->tree_data){
+        /*Creates an object from the sha in the leaf*/
+        CippObject* leaf_obj = CippObject::object_read(repo, leaf.sha);
+        
+        //Creates the path of the associated new object
+        filesystem::path obj_path = path / leaf.path;
+
+        //if the object is another tree, call the function again
+        if(dynamic_cast<CippTree*>(leaf_obj)){
+            filesystem::create_directories(obj_path);
+            tree_checkout(repo, leaf_obj, obj_path);
+        }
+        /**assumes the object is a blob instead. The casts are so bad here
+        * what is even the main differences between dynamic and static casts. Idk
+        * I think one is slower than the other. I just know I gotta do them
+        * TODO: Fix everything
+        */
+        else if(dynamic_cast<CippBlob*>(leaf_obj)){
+            ofstream output(path, ios::binary);
+            auto blob = static_cast<CippBlob*>(leaf_obj)->blob_data;
+            output.write((char*)&*blob.begin(), blob.size());
+        }
+
+    }
 }
 
 void ls_tree(CippRepository repo, string tree, bool recursive = false, filesystem::path path){

@@ -48,6 +48,13 @@ int main(int argc, char **argv){
     /*ls tree command flags*/
     Flag ls_tree_recursive(ls_tree_flags, "r", "Recurse into sub-trees", {'r'});
 
+    /*Checkout command*/
+    Command checkout(commands, "checkout", "Checkout a commit inside of a directory");
+    Group checkout_args(checkout, "args");
+    Group checkout_flags(checkout, "flags");
+    Positional<string> checkout_commit(checkout_args, "commit", "The commit or tree to checkout");
+    Positional<string> checkout_path(checkout_args, "path", "The EMPTY directory to checkout on");
+
     /*Global arguments*/
     Group arguments(parser, "arguments", Group::Validators::DontCare, Options::Global);
     HelpFlag help(parser, "help", "Display this help menu", {"h", "help"}, Options::Global);
@@ -71,8 +78,10 @@ int main(int argc, char **argv){
             log_cmd(log_commit.Get());
         }
         if(ls_tree){
-            ls_tree_cmd(ls_tree_tree.Get(), ls_tree_args.GetAllFlags());
-            
+            ls_tree_cmd(ls_tree_tree.Get(), ls_tree_args.GetAllFlags());  
+        }
+        if(checkout){
+            checkout_cmd(checkout_commit.Get(), checkout_path.Get());
         }
     }
     

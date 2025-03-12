@@ -16,7 +16,7 @@ class CippBlob : public CippObject{
         void deserialize(vector<unsigned char>) override;
 
 
-    private:
+    
         vector<unsigned char> blob_data;
           
 };

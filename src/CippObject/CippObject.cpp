@@ -72,9 +72,10 @@ CippObject* CippObject::object_read(CippRepository& repo, string sha){
 
 }
 /** This function writes a an object file using the sha-1 has function. Objects are written into
- * the objects folder in the .git directory
+ * the objects folder in the .git directory   TODO: Document this. I do not remember what I wrote or why I wrote it now
+ * 
  */
-string CippObject::object_write(CippRepository& repo, CippObject obj, vector<unsigned char> data, bool write_enable){
+string CippObject::object_write(CippRepository& repo, CippObject obj, raw_t data, bool write_enable){
     unsigned long size = data.size();
     unsigned long compressed_size = compressBound(size);
     

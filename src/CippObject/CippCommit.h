@@ -15,7 +15,8 @@ class CippCommit : public CippObject{
         
         void deserialize(vector<unsigned char>) override;
 
-        map<vector<uint8_t>, vector<uint8_t>> commit_data;
+        //key value map of two uint8 vectors
+        kvlm_t commit_data;
           
 };
 
