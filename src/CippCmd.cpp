@@ -154,6 +154,26 @@ int checkout_cmd(string commit, string path){
     
 }
 
+int show_refs_cmd(){
+    CippRepository repo = CippRepository::repo_find();
+    
+    auto refs = ref_list(repo);
+}
+
+
+
+/*Helper functions*/
+/*----------------------------------------------------------------------------------------*/
+
+
+void ref_list(CippRepository repo, filesystem::path path = "."){
+    if(path == "."){
+        path = CippRepository::repo_dir(repo, "refs");
+    }
+    kvlm_t ret = kvlm_t();
+
+    for(auto f : filesystem::)
+}
 
 /** Helper function to call recursively. TODO: Refactor to not use so many dynamic casts
 * My entire polymorphism structure needs to be redone as it is very very messy
@@ -185,9 +205,9 @@ void tree_checkout(CippRepository repo, CippObject* obj, filesystem::path path){
         else if(dynamic_cast<CippBlob*>(leaf_obj)){
             ofstream output(path, ios::binary);
             auto blob = static_cast<CippBlob*>(leaf_obj)->blob_data;
+            //this line is horrific
             output.write((char*)&*blob.begin(), blob.size());
         }
-
     }
 }
 

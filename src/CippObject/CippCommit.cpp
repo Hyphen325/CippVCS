@@ -9,7 +9,7 @@ CippCommit::CippCommit(kvlm_t& kvlm){
 }
 
 CippCommit::CippCommit(string& data){
-    commit_data = kvlm_t();
+    deserialize(raw_t(data.begin(), data.end()));
 }
 
 CippCommit::CippCommit(const vector<uint8_t>& data){

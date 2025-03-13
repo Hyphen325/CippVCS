@@ -9,10 +9,12 @@ int hash_object_cmd(string, vector<FlagBase*>);
 int log_cmd(string);
 int ls_tree_cmd(string, vector<FlagBase*>);
 int checkout_cmd(string, string);
+int show_ref_cmd(); //this command has no args
 
 void log_graphviz(CippRepository, string, set<string>);
 void ls_tree(CippRepository , string , bool, filesystem::path="");
 void tree_checkout(CippRepository, CippObject*, filesystem::path);
+void show_ref();
 
 
 

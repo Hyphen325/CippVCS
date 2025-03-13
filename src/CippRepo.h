@@ -25,6 +25,8 @@ class CippRepository {
         /*Returns an error if the specified path is not a directory, and creates a directory at
         said location if specified by the parameters*/
         static filesystem::path  repo_dir(filesystem::path, filesystem::path, bool);
+        static filesystem::path  repo_dir(CippRepository, filesystem::path);
+
         /*Creates a new repository at the specified path*/
         static CippRepository createRepo(filesystem::path path);
 

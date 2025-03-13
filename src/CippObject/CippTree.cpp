@@ -17,6 +17,11 @@ CippTreeLeaf::CippTreeLeaf(uint64_t mode, filesystem::path path, string sha){
     this->sha = sha;
 }
 
+CippTree::CippTree(string data){
+    raw_t raw = raw_t(data.begin(), data.end());
+    deserialize(raw);
+}
+
 tuple<int, CippTreeLeaf> CippTree::tree_parse_one(const vector<uint8_t>& data, int start = 0){
     
     string raw_str(data.begin(), data.end());
@@ -34,7 +39,7 @@ tuple<int, CippTreeLeaf> CippTree::tree_parse_one(const vector<uint8_t>& data, i
     filesystem::path path = raw_str.substr(space+1, null_term - (space+1));
 
     string sha;
-    for (int i = null_term + 1; i < null_term + 21; ++i) {
+    for (uint32_t i = null_term + 1; i < null_term + 21; ++i) {
         char buffer[3];
         snprintf(buffer, sizeof(buffer), "%02x", static_cast<unsigned char>(data[i]));
         sha += buffer;
@@ -58,11 +63,11 @@ vector<CippTreeLeaf> CippTree::tree_parse(const vector<uint8_t>&data){
 }
 bool CippTree::tree_leaf_sort_key(CippTreeLeaf& leaf1, CippTreeLeaf& leaf2){
     // If leafs are directories, appends / after them so they do not sort before normal files
-    if(!(leaf1.mode & (3 << 63) == 2)){
+    if(!((leaf1.mode & (3UL << 62)) == 2)){
         leaf1.path/ "/";
     }
 
-    if(!(leaf2.mode & (3 << 63) == 2)){
+    if(!((leaf2.mode & (3UL << 62)) == 2)){
         leaf2.path/ "/";
     }
 
@@ -91,6 +96,10 @@ vector<uint8_t> CippTree::serialize(){
         ret.insert(ret.end(), leaf.sha.begin(), leaf.sha.end());
     }
     return ret;
+}
+
+void CippTree::deserialize(raw_t data){
+    tree_data = CippTree::tree_parse(data);
 }
 
 

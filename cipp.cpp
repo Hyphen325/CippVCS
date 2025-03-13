@@ -55,6 +55,10 @@ int main(int argc, char **argv){
     Positional<string> checkout_commit(checkout_args, "commit", "The commit or tree to checkout");
     Positional<string> checkout_path(checkout_args, "path", "The EMPTY directory to checkout on");
 
+    /*The show-ref command*/
+    Command show_ref(commands, "show-ref", "List references");
+    
+
     /*Global arguments*/
     Group arguments(parser, "arguments", Group::Validators::DontCare, Options::Global);
     HelpFlag help(parser, "help", "Display this help menu", {"h", "help"}, Options::Global);

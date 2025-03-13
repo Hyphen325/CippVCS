@@ -2,7 +2,10 @@
 
 using namespace std;
 
-
+/**Finds a repo from the absolute path
+ * TODO: Reformat so that it passes by reference instead of throwing around 
+ * CippRepos by value
+ */
 CippRepository CippRepository::repo_find(filesystem::path path=".", bool required=true){
     path = filesystem::absolute(path);
 
@@ -22,6 +25,19 @@ filesystem::path CippRepository::repo_path(filesystem::path path){
     return gitdir/path;
 }
 
+filesystem::path CippRepository::repo_dir(CippRepository repo, filesystem::path dir_path){
+    auto path = repo.gitdir/dir_path;
+    
+    if(filesystem::exists(path)){
+        if(filesystem::is_directory(path)){
+            return path;
+        }else{
+            throw runtime_error("Path is not a directory!");
+        }
+    }
+    return filesystem::path("");
+    
+}
 
 filesystem::path  CippRepository::repo_dir(filesystem::path project_path, filesystem::path dir_path, bool mkdir=false){
     auto path = project_path/dir_path;

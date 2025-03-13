@@ -64,8 +64,8 @@ CippObject* CippObject::object_read(CippRepository& repo, string sha){
     string content = raw_str.substr(null_pos + 1);
     
     if (fmt == "commit") return new CippCommit(vector<uint8_t>(content.begin(), content.end()));
-    //if (fmt == "tree")   return make_unique<CippTree>(content);
-    //if (fmt == "tag")    return make_unique<CippTag>(content);
+    if (fmt == "tree")   return new CippTree(content);
+    if (fmt == "tag")    return new CippTag(content);
     if (fmt == "blob")   return new CippBlob(vector<uint8_t>(content.begin(), content.end()));
 
     throw runtime_error("Unknown object type: " + fmt);
