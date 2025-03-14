@@ -15,6 +15,8 @@ void log_graphviz(CippRepository, string, set<string>);
 void ls_tree(CippRepository , string , bool, filesystem::path="");
 void tree_checkout(CippRepository, CippObject*, filesystem::path);
 void show_ref();
+void ref_list(CippRepository, filesystem::path);
+raw_t ref_resolve(CippRepository, filesystem::path);
 
 
 

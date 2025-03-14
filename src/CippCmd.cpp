@@ -157,7 +157,11 @@ int checkout_cmd(string commit, string path){
 int show_refs_cmd(){
     CippRepository repo = CippRepository::repo_find();
     
+    //gather the refs to show
     auto refs = ref_list(repo);
+
+    //display references
+    show_ref();
 }
 
 
@@ -165,14 +169,60 @@ int show_refs_cmd(){
 /*Helper functions*/
 /*----------------------------------------------------------------------------------------*/
 
+/**Sometimes, an indirect reference may be broken. This is normal behaviour
+ * in a specific case: when there is the HEAD of a new repository with no commits.
+ * In that case, .git/HEAD points to "refs: refs/heads/main", but .git/refs/heads/main 
+ * doesn't exist yet (since theres no vommit for it to refer to)
+ */
+raw_t ref_resolve(CippRepository repo, filesystem::path path){
+    path = repo.repo_file(path);
 
+    if(filesystem::is_directory(path)){
+        return;
+    }
+
+    //creates a file reader
+    ifstream reader(path);
+    reader.seekg(0, ios::end);
+    unsigned long size = reader.tellg();
+    reader.seekg(0, ios::beg);
+
+    raw_t buffer(size);
+    reader.read(reinterpret_cast<char*> (buffer.data()), size);
+    reader.close();
+
+    //buffer now contains all data from the file.
+
+    if(buffer[0] == 'r' && buffer[1] == 'e' && buffer[2] == 'f' && buffer[3] ==':' && buffer[4] == ' '){
+        return ref_resolve(repo, string(buffer.begin()+5, buffer.end()));
+    }else{
+        return buffer;
+    }
+}
+
+/**This function is tricky, because it needs to return a map of a element that could either
+ * be another map, or just a raw_t type. Possible solutions to this include a custom tree data
+ * stucture? Is there anything in the stl that can help here?
+ * 
+ * Structure ideas: Key -> (Union: Itself, raw_t)??
+ */
 void ref_list(CippRepository repo, filesystem::path path = "."){
     if(path == "."){
         path = CippRepository::repo_dir(repo, "refs");
     }
+    //placeholder
     kvlm_t ret = kvlm_t();
 
-    for(auto f : filesystem::)
+    for(auto f : filesystem::directory_iterator(path)){
+        filesystem::path can = f.path();
+        if(f.is_directory()){
+            //sets ret[f] to be another map
+            //ret[f] = ref_list(repo, can);
+        }else{
+            //sets ret[f] to be a raw_t
+            //ret[f] = ref_resolve(repo, can);
+        }
+    }
 }
 
 /** Helper function to call recursively. TODO: Refactor to not use so many dynamic casts
@@ -207,6 +257,7 @@ void tree_checkout(CippRepository repo, CippObject* obj, filesystem::path path){
             auto blob = static_cast<CippBlob*>(leaf_obj)->blob_data;
             //this line is horrific
             output.write((char*)&*blob.begin(), blob.size());
+            output.close();
         }
     }
 }
@@ -251,7 +302,7 @@ void log_graphviz(CippRepository repo, string sha, set<string> seen = set<string
         cerr << "Error: Commit object is null" << endl;
         return;
     }    vector<uint8_t> message = commit->serialize();
-    //Can be combined into one check for more efficient code
+    //TODO: Can be combined into one check for more efficient code
     for(auto it = message.begin(); it != message.end();it++){
         it = find(it, message.end(), 92);
         message.insert(it, 92);
