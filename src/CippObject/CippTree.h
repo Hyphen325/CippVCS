@@ -20,7 +20,6 @@ public:
     CippTree();
     
 
-   
     void deserialize(vector<uint8_t>) override;
     vector<uint8_t> serialize() override;
     

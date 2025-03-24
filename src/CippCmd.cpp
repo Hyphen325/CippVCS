@@ -2,13 +2,17 @@
 #include "CippObject/CippObject.h"
 #include "CippObject/CippCommit.h"
 #include "CippObject/CippBlob.h"
+#include <any>
+#include <filesystem>
+#include <iostream>
 
 using namespace args;
+using namespace std;
 
 
 int cat_file_cmd(string type, string object){
     if(type.empty() || object.empty()){
-        cout << "Must provide a type and object" << endl;
+        std::cout << "Must provide a type and object" << endl;
         return 1;
     }
 
@@ -16,13 +20,13 @@ int cat_file_cmd(string type, string object){
     transform(type.begin(), type.end(), type.begin(), ::tolower);
     
 
-    cout << "Finding Repository" << endl;
+    std::cout << "Finding Repository" << endl;
     CippRepository repo = CippRepository::repo_find();
-    cout << "Examining Characters" << endl;
+    std::cout << "Examining Characters" << endl;
     if(object == "blob"){
         CippObject* blob = CippBlob::object_read(repo, CippBlob::object_find(repo, object));
         vector<uint8_t> blob_text = blob->serialize();
-        cout << "Blob" <<  string(blob_text.begin(), blob_text.end()) << endl;
+        std::cout << "Blob" <<  string(blob_text.begin(), blob_text.end()) << endl;
     }
 
     cout << "Type: " << type << endl;
@@ -70,9 +74,9 @@ int hash_object_cmd(string object, vector<FlagBase*> flags){
     }
     
     //Looks for file in provided location
-    filesystem::path local_path =  filesystem::current_path()/object;
+    std::filesystem::path local_path =  filesystem::current_path()/object;
     if(!filesystem::exists(local_path)){
-        cout << "File does not exist" << endl;
+        std::cout << "File does not exist" << endl;
         return 1;
     }
 
@@ -158,10 +162,12 @@ int show_refs_cmd(){
     CippRepository repo = CippRepository::repo_find();
     
     //gather the refs to show
-    auto refs = ref_list(repo);
+    auto refs = ref_list(repo, "");
 
     //display references
     show_ref();
+
+    return 0;
 }
 
 
@@ -174,11 +180,11 @@ int show_refs_cmd(){
  * In that case, .git/HEAD points to "refs: refs/heads/main", but .git/refs/heads/main 
  * doesn't exist yet (since theres no vommit for it to refer to)
  */
-raw_t ref_resolve(CippRepository repo, filesystem::path path){
+raw_t ref_resolve(CippRepository repo, filesystem::path path = ""){
     path = repo.repo_file(path);
 
     if(filesystem::is_directory(path)){
-        return;
+        return raw_t(1);
     }
 
     //creates a file reader
@@ -200,30 +206,55 @@ raw_t ref_resolve(CippRepository repo, filesystem::path path){
     }
 }
 
+/*
+def show_ref(repo, refs, with_hash=True, prefix=""):
+    if prefix:
+        prefix = prefix + '/'
+    for k, v in refs.items():
+        if type(v) == str and with_hash:
+            print (f"{v} {prefix}{k}")
+        elif type(v) == str:
+            print (f"{prefix}{k}")
+        else:
+            show_ref(repo, v, with_hash=with_hash, prefix=f"{prefix}{k}")
+
+*/
+/**
+ * This function displays the ref
+ */
+void show_ref(CippRepository repo, bool hash = true, fileystem::path path = ""){
+
+}
+
 /**This function is tricky, because it needs to return a map of a element that could either
  * be another map, or just a raw_t type. Possible solutions to this include a custom tree data
  * stucture? Is there anything in the stl that can help here?
  * 
  * Structure ideas: Key -> (Union: Itself, raw_t)??
  */
-void ref_list(CippRepository repo, filesystem::path path = "."){
+std::unordered_map<std::filesystem::path, std::any> ref_list(CippRepository repo, filesystem::path path = "."){
     if(path == "."){
         path = CippRepository::repo_dir(repo, "refs");
     }
     //placeholder
-    kvlm_t ret = kvlm_t();
+    unordered_map<filesystem::path, any> ret;
+    //kvlm_t ret = kvlm_t();
 
     for(auto f : filesystem::directory_iterator(path)){
         filesystem::path can = f.path();
         if(f.is_directory()){
             //sets ret[f] to be another map
-            //ret[f] = ref_list(repo, can);
+            ret[can] = ref_list(repo, can);
         }else{
             //sets ret[f] to be a raw_t
-            //ret[f] = ref_resolve(repo, can);
+            ret[can] = ref_resolve(repo, can);
         }
     }
+
+    return ret;
 }
+
+
 
 /** Helper function to call recursively. TODO: Refactor to not use so many dynamic casts
 * My entire polymorphism structure needs to be redone as it is very very messy
