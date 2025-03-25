@@ -29,14 +29,14 @@ int cat_file_cmd(string type, string object){
         std::cout << "Blob" <<  string(blob_text.begin(), blob_text.end()) << endl;
     }
 
-    cout << "Type: " << type << endl;
-    cout << "Object: " << object << endl;
+    std::cout << "Type: " << type << endl;
+    std::cout << "Object: " << object << endl;
     return 0;
 }
 
 int hash_object_cmd(string object, vector<FlagBase*> flags){
     if(object.empty()){
-        cout << "Must provide a file" << endl;
+        std::cout << "Must provide a file" << endl;
         return 1;
     }
 
@@ -62,7 +62,7 @@ int hash_object_cmd(string object, vector<FlagBase*> flags){
     
 
     //defaults object and type to lowercase
-    cout << "Object: " << object << endl << "Type: " <<type<<endl;
+    std::cout << "Object: " << object << endl << "Type: " <<type<<endl;
     transform(object.begin(), object.end(), object.begin(), ::tolower);
     transform(type.begin(), type.end(), type.begin(), ::tolower);
 
@@ -165,7 +165,21 @@ int show_refs_cmd(){
     auto refs = ref_list(repo, "");
 
     //display references
-    show_ref();
+    show_ref(repo, refs, "refs");
+
+    return 0;
+}
+
+/**
+ * The tag command
+ */
+int tag_cmd(Group arguments, vector<FlagBase*> flags){
+    auto arg = static_cast<Positional<string>*>(arguments.GetNextPositional());
+    while(arg){
+        cout << arg->Get() << endl;
+        arg = static_cast<Positional<string>*>(arguments.GetNextPositional());
+
+    }
 
     return 0;
 }
@@ -206,24 +220,33 @@ raw_t ref_resolve(CippRepository repo, filesystem::path path = ""){
     }
 }
 
-/*
-def show_ref(repo, refs, with_hash=True, prefix=""):
-    if prefix:
-        prefix = prefix + '/'
-    for k, v in refs.items():
-        if type(v) == str and with_hash:
-            print (f"{v} {prefix}{k}")
-        elif type(v) == str:
-            print (f"{prefix}{k}")
-        else:
-            show_ref(repo, v, with_hash=with_hash, prefix=f"{prefix}{k}")
-
-*/
 /**
- * This function displays the ref
+ * This function displays the ref. The type of the refs can be either itself or a raw_t
  */
-void show_ref(CippRepository repo, bool hash = true, fileystem::path path = ""){
+void show_ref(CippRepository repo, std::unordered_map<std::filesystem::path, std::any> refs, filesystem::path path, bool hash){
+    if(!path.empty()){
+        path= path / "/";
+    }
 
+    //taks each value in the map and casts it to handle it in a specific way
+    for(auto map : refs){
+        try{
+            auto value = (any_cast<raw_t>(map.second));
+            string ref_str = string(value.begin(), value.end());
+            string key_str = map.first.c_str();
+            if(hash){
+                cout << ref_str << " " << path.c_str() << key_str << endl;
+            }else{
+                cout << path.c_str() << key_str << endl;
+            }
+            
+        }catch(const bad_any_cast&){
+            //calls the function again with the nested map
+            if (auto nested_map = std::any_cast<std::unordered_map<std::filesystem::path, std::any>>(&map.second)) {
+                show_ref(repo, *nested_map, path / map.first, hash);
+            }
+        }
+    }
 }
 
 /**This function is tricky, because it needs to return a map of a element that could either
@@ -231,6 +254,7 @@ void show_ref(CippRepository repo, bool hash = true, fileystem::path path = ""){
  * stucture? Is there anything in the stl that can help here?
  * 
  * Structure ideas: Key -> (Union: Itself, raw_t)??
+ * I'll try and use std::any but TODO: Change to use a more safe method of dynamic types
  */
 std::unordered_map<std::filesystem::path, std::any> ref_list(CippRepository repo, filesystem::path path = "."){
     if(path == "."){

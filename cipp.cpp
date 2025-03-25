@@ -57,6 +57,15 @@ int main(int argc, char **argv){
 
     /*The show-ref command*/
     Command show_ref(commands, "show-ref", "List references");
+
+    /*The tag command*/
+    Command tag(commands, "tag", "List and create tags");
+    Group tag_args(tag, "args");
+    Group tag_flags(tag, "flags");
+    Positional<string> tag_name(tag_args, "name", "The new tag's name");
+    Positional<string> tag_object(tag_args, "object", "The object the new tag will point to");
+    Flag tag_create(tag_flags, "a", "Whether to create a tag object", {"a"});
+
     
 
     /*Global arguments*/
@@ -86,6 +95,9 @@ int main(int argc, char **argv){
         }
         if(checkout){
             checkout_cmd(checkout_commit.Get(), checkout_path.Get());
+        }
+        if(tag){
+            tag_cmd(tag_args, tag_flags.GetAllFlags());
         }
     }
     
