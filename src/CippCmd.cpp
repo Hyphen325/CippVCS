@@ -173,12 +173,43 @@ int show_refs_cmd(){
 /**
  * The tag command
  */
-int tag_cmd(Group arguments, vector<FlagBase*> flags){
-    auto arg = static_cast<Positional<string>*>(arguments.GetNextPositional());
-    while(arg){
-        cout << arg->Get() << endl;
-        arg = static_cast<Positional<string>*>(arguments.GetNextPositional());
+int tag_cmd(Group& arguments, vector<FlagBase*> flags){
 
+    CippRepository repo = CippRepository::repo_find();
+    //gets all arguments
+    auto args = arguments.GetAllPositional();
+
+    string name = "";
+    string object = "";
+    bool create = false; 
+
+    for(PositionalBase* pos : args){
+        //ALL FLAGS I WRITE FOR NOW START AS STRINGS. THIS WILL CHANGE IF 
+        //THE TYPE INPUTTED TO THE FLAG COMMAND IS NOT A STRING (IDK WHEN THAT HAPPENS)
+        Positional<string>* flag = static_cast<Positional<string>*>(pos);
+        if(!flag->Get().empty()) 
+        {
+            //TODO: Change to have some better way of checking arguments than just comparing strings
+            //This is nasty. Maybe compare to reference of argument in group?
+            if(flag->Name() == "name"){
+                cout << "Name: " << flag->Get() << endl;
+                name = flag->Get();
+            }
+
+            else if(flag->Name() == "object"){
+                cout << "Object: " << flag->Get() << endl;
+            }
+        }
+    }
+    //I take it all back I love this argument parsing tool. It's awesome
+    
+    if(!name.empty()){
+        tag_create(repo, name, object, create); //
+    }else{
+        auto refs = ref_list(repo);
+        //idk just hope this works, ill make it better soon
+        auto tags = std::any_cast<std::unordered_map<std::filesystem::path, std::any>>(refs["tags"]);
+        show_ref(repo, tags, "", false);
     }
 
     return 0;
@@ -188,6 +219,35 @@ int tag_cmd(Group arguments, vector<FlagBase*> flags){
 
 /*Helper functions*/
 /*----------------------------------------------------------------------------------------*/
+
+/**Creates a tag object if specified in the command */
+void tag_create(CippRepository repo, string name, string object, bool create_tag_object){
+    auto sha = CippObject::object_find(repo, name);
+
+    if(create_tag_object){
+        CippTag tag = CippTag();
+
+        tag.commit_data = kvlm_t();
+        tag.commit_data[raw_t('object')] = raw_t(sha.begin(), sha.end());
+        tag.commit_data[raw_t('type')] = raw_t('commit');
+        tag.commit_data[raw_t('tag')] = raw_t(name.begin(), name.end());
+
+        tag.commit_data[raw_t('tagger')] = raw_t('Cipp User');
+
+        auto tag_sha = CippObject::object_write(repo, tag, tag.serialize(), true);
+
+        ref_create(repo, "tags/" + name, tag_sha);
+    }else{
+        ref_create(repo, "tags/" + name, sha);
+    }
+}
+
+void ref_create(CippRepository repo, string ref_name, string sha){
+    //
+    std::ofstream file(repo.repo_file(filesystem::path("refs") / ref_name));
+    file.write((char*)&*(sha + '\n').begin(), sha.length()+1);
+    file.close();
+}
 
 /**Sometimes, an indirect reference may be broken. This is normal behaviour
  * in a specific case: when there is the HEAD of a new repository with no commits.

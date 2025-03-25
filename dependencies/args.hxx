@@ -871,6 +871,11 @@ namespace args
                 return {};
             }
 
+            virtual std::vector<PositionalBase*> GetAllPositional()
+            {
+                return{};
+            }
+
             virtual bool HasFlag() const
             {
                 return false;
@@ -1316,6 +1321,12 @@ namespace args
                 return Ready() ? this : nullptr;
             }
 
+            /**Returns the current positional as a flag */
+            virtual std::vector<PositionalBase*> GetAllPositional() override
+            {
+                return { this };
+            }
+
             virtual bool HasPositional() const override
             {
                 return true;
@@ -1461,6 +1472,22 @@ namespace args
                     child->Validate(shortPrefix, longPrefix);
                 }
             }
+
+            /** Get all Positional Arguments, or nullptr if there are none
+             * See GetAllFlags for similar behvaior
+             * 
+             */
+            virtual std::vector<PositionalBase*> GetAllPositional() override
+            {
+                std::vector<PositionalBase*> ret;
+                for (Base *child : Children())
+                {
+                    auto childRet = child->GetAllPositional();
+                    ret.insert(ret.end(), childRet.begin(), childRet.end());
+                }
+
+                return ret;
+            } 
 
             /** Get the next ready positional, or nullptr if there is none
              *
@@ -1968,6 +1995,8 @@ namespace args
 
                 return res;
             }
+
+            /*TODO: Implement GetAllPositionalFunctionality on Commands, not just Groups*/
 
             virtual PositionalBase *GetNextPositional() override
             {
