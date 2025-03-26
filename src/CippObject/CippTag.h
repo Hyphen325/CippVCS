@@ -13,8 +13,6 @@ class CippTag : public CippCommit {
 public:
     CippTag();
     CippTag(string);
-    ~CippTag();
-
 };
 
 

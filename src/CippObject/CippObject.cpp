@@ -152,6 +152,33 @@ string CippObject::object_hash(filesystem::path input, CippObjectType obj_type, 
     return sha;
 }
 
+/**Resolves the name to an object hash in the repo
+ * This function is aware of:
+ * - The HEAD literal
+ * - the short and long hashes
+ * - tags
+ * - branches
+ * - remote branches
+ */
+vector<raw_t> CippObject::object_resolve(CippRepository& repo, string& name){
+    vector<raw_t> candidates;
+    if(name.empty()){
+        return candidates;
+    }
+
+    //regex to compare against
+    std::regex hash_re("^[0-9A-Fa-f]{4,40}$");
+
+    if(name == "HEAD"){
+        candidates.push_back(ref_resolve(repo, "HEAD"));
+        return candidates;
+    }
+
+
+
+
+}
+
 /** This function is recursive: it reads a key/value pair, then call
  * itself back with the new position. We need to know, where we are at,
  * a keyword, or already in the message

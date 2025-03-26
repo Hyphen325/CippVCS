@@ -12,6 +12,7 @@
 #include <set>
 #include <algorithm>
 #include <tuple>
+#include <regex>
 
 #include <zlib.h>
 #include <openssl/sha.h>

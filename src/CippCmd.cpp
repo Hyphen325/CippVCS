@@ -48,7 +48,7 @@ int hash_object_cmd(string object, vector<FlagBase*> flags){
         //-type flag
         if(dynamic_cast<ValueFlag<string>*>(flag)){
             ValueFlag<string>* f = dynamic_cast<ValueFlag<string>*>(flag);
-            type = f->Get();
+            type = f->Get().empty() ? "blob" : f->Get();
         }
         // -w flag
         if(dynamic_cast<Flag*>(flag)){
@@ -206,7 +206,7 @@ int tag_cmd(Group& arguments, vector<FlagBase*> flags){
     if(!name.empty()){
         tag_create(repo, name, object, create); //
     }else{
-        auto refs = ref_list(repo);
+        auto refs = ref_list(repo, ".");
         //idk just hope this works, ill make it better soon
         auto tags = std::any_cast<std::unordered_map<std::filesystem::path, std::any>>(refs["tags"]);
         show_ref(repo, tags, "", false);

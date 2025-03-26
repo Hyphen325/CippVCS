@@ -37,6 +37,7 @@ class CippObject {
         static string object_write(CippRepository&, CippObject, vector<unsigned char>, bool);
         static string object_find(CippRepository&, string, CippObjectType);
         static string object_hash(filesystem::path, CippObjectType, CippRepository&, bool = false);
+        static vector<raw_t> object_resolve(CippRepository&, string&);
         static string sha1(const string& );      
 
         static map<vector<uint8_t>, vector<uint8_t>> kvlm_parse(vector<uint8_t>&, map<vector<uint8_t>, vector<uint8_t>>&,  int start=0 );
