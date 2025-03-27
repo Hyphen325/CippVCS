@@ -17,6 +17,7 @@ class CippTreeLeaf {
 class CippTree : public CippObject{
 public:
     CippTree(string);
+    CippTree(raw_t);
     CippTree();
     
 

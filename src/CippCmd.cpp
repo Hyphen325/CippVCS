@@ -95,6 +95,10 @@ int hash_object_cmd(string object, vector<FlagBase*> flags){
 int log_cmd(string commit){
     CippRepository repo = CippRepository::repo_find();
 
+    if(commit.empty()){
+        cout << "Missing valid commit to view" << endl;
+        return 1;
+    }
     cout << "digraph cipplog{" << endl << "\t node[shape=rect]" << endl;
     log_graphviz(repo, CippObject::object_find(repo, commit), set<string>());
     cout << "}" << endl;
@@ -102,7 +106,7 @@ int log_cmd(string commit){
 }
 
 int ls_tree_cmd(string tree, vector<FlagBase*> flags){
-    if(tree.empty()) cout << "Must provide a tree" << endl; return 1;
+    if(tree.empty()){ cout << "Must provide a tree" << endl; return 1;}
 
     vector<string> flag_values;
     bool recursive = false;
@@ -125,8 +129,11 @@ int ls_tree_cmd(string tree, vector<FlagBase*> flags){
 
 int checkout_cmd(string commit, string path){
     //checks if the provided arguments are empty
-    if(commit.empty() || path.empty()){
-        cout << "Must provide a commit and path" << endl; return 1;
+    if(commit.empty()){
+        cout << "Must provide a commit" << endl; return 1;
+    }
+    if(path.empty()){
+        path = ".";
     }
 
     //finds the repository in the local directory
@@ -208,8 +215,13 @@ int tag_cmd(Group& arguments, vector<FlagBase*> flags){
     }else{
         auto refs = ref_list(repo, ".");
         //idk just hope this works, ill make it better soon
-        auto tags = std::any_cast<std::unordered_map<std::filesystem::path, std::any>>(refs["tags"]);
-        show_ref(repo, tags, "", false);
+        try{
+            auto tags = std::any_cast<std::unordered_map<std::filesystem::path, std::any>>(refs["tags"]);
+            show_ref(repo, tags, "", false);
+        }catch(exception bad_any_cast){
+            cout << "Missing any tags" << endl;
+        }
+        
     }
 
     return 0;
@@ -228,11 +240,15 @@ void tag_create(CippRepository repo, string name, string object, bool create_tag
         CippTag tag = CippTag();
 
         tag.commit_data = kvlm_t();
-        tag.commit_data[raw_t('object')] = raw_t(sha.begin(), sha.end());
-        tag.commit_data[raw_t('type')] = raw_t('commit');
-        tag.commit_data[raw_t('tag')] = raw_t(name.begin(), name.end());
+        string object = "object";
+        string type = "type";
+        string tag_s = "tag";
+        string tagger = "tagger";
+        tag.commit_data[raw_t(object.begin(), object.end())] = raw_t(sha.begin(), sha.end());
+        tag.commit_data[raw_t(type.begin(), type.end())] = raw_t('commit');
+        tag.commit_data[raw_t(tag_s.begin(), tag_s.end())] = raw_t(name.begin(), name.end());
 
-        tag.commit_data[raw_t('tagger')] = raw_t('Cipp User');
+        tag.commit_data[raw_t(tagger.begin(), tagger.end())] = raw_t('Cipp User');
 
         auto tag_sha = CippObject::object_write(repo, tag, tag.serialize(), true);
 
@@ -258,7 +274,7 @@ raw_t ref_resolve(CippRepository repo, filesystem::path path = ""){
     path = repo.repo_file(path);
 
     if(filesystem::is_directory(path)){
-        return raw_t(1);
+        return raw_t();
     }
 
     //creates a file reader

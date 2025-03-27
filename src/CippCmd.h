@@ -22,7 +22,6 @@ void tree_checkout(CippRepository, CippObject*, filesystem::path);
 void show_ref();
 void show_ref(CippRepository, std::unordered_map<std::filesystem::path, std::any>, filesystem::path = "", bool = true);
 unordered_map<filesystem::path, any> ref_list(CippRepository, filesystem::path);
-raw_t ref_resolve(CippRepository, filesystem::path);
 void tag_create(CippRepository, string, string, bool=false);
 void ref_create(CippRepository, string, string);
 

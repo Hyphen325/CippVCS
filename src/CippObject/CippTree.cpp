@@ -19,6 +19,12 @@ CippTreeLeaf::CippTreeLeaf(uint64_t mode, filesystem::path path, string sha){
 
 CippTree::CippTree(string data){
     raw_t raw = raw_t(data.begin(), data.end());
+    fmt = "tree";
+    deserialize(raw);
+}
+
+CippTree::CippTree(raw_t raw){
+    fmt = "tree";
     deserialize(raw);
 }
 
@@ -63,11 +69,11 @@ vector<CippTreeLeaf> CippTree::tree_parse(const vector<uint8_t>&data){
 }
 bool CippTree::tree_leaf_sort_key(CippTreeLeaf& leaf1, CippTreeLeaf& leaf2){
     // If leafs are directories, appends / after them so they do not sort before normal files
-    if(!((leaf1.mode & (3UL << 62)) == 2)){
+    if(!((leaf1.mode & (3UL << 62)) == (2UL << 62))){
         leaf1.path/ "/";
     }
 
-    if(!((leaf2.mode & (3UL << 62)) == 2)){
+    if(!((leaf2.mode & (3UL << 62)) == (2UL << 62))){
         leaf2.path/ "/";
     }
 

@@ -12,6 +12,7 @@ vector<unsigned char> CippObject::serialize() {
 void CippObject::deserialize(vector<unsigned char> data) {
 }
 
+/**Takes the input sha string that represents the file and uncompresses it into it's original object form */
 CippObject* CippObject::object_read(CippRepository& repo, string sha){
     filesystem::path path = repo.repo_path("objects")/sha.substr(0,2)/sha.substr(2);
     if(!filesystem::exists(path)){
@@ -105,7 +106,48 @@ string CippObject::object_write(CippRepository& repo, CippObject obj, raw_t data
     return sha;
 }
 
-string CippObject::object_find(CippRepository& repo, string name, CippObjectType type = BLOB){
+/*Returns the sha string of the requested object type and name in the repo*/
+string CippObject::object_find(CippRepository& repo, string name, CippObjectType type, bool follow){
+    
+    vector<raw_t> sha_list = object_resolve(repo, name);
+    if(sha_list.empty()){
+        throw new runtime_error("No such reference " + name);
+    }
+    if(sha_list.size() > 1){
+        throw new runtime_error("Ambiguous reference " + name );
+    }
+
+    raw_t sha = sha_list[0];
+
+    if(type == NONE) return string(sha.begin(), sha.end());
+
+    while(true){
+        CippObject* object = object_read(repo, string(sha.begin(), sha.end()));
+
+        //if the sha object type is the type looked for, simply return it
+        if(object->fmt == name){
+            return string(sha.begin(), sha.end());
+        }
+
+        if(!follow){
+            //failure to find the object on the first try, and not told to follow a tree
+            return string();
+        }
+
+        if(object->fmt == "tag"){
+            string obj = "object";
+            sha = static_cast<CippTag*>(object)->commit_data[raw_t(obj.begin(), obj.end())];
+        }else if(object->fmt == "commit" && type == TREE){
+            //if the type is a tree cast it and set the sha to be the value inside
+            string tree = "tree";
+            sha = static_cast<CippCommit*>(object)->commit_data[raw_t(tree.begin(), tree.end())];
+        }else{
+            return string();
+        }
+
+
+    }
+    
     return name;
 }
 
@@ -120,6 +162,7 @@ string CippObject::sha1(const string& input) {
     return ss.str();
 }
 
+/**Hashes an object and turns it into a file in the git directory */
 string CippObject::object_hash(filesystem::path input, CippObjectType obj_type, CippRepository& repo, bool write_enable){
     ifstream file(input, ios::binary);
     if(!file){
@@ -136,17 +179,30 @@ string CippObject::object_hash(filesystem::path input, CippObjectType obj_type, 
     file.close();
     
     string sha;
+    raw_t obj_data;
+    CippObject obj;
     
     //TODO: Implement other object types, uses default of blob right now
+
     cout << "type: " << obj_type << endl;
-    if(obj_type != BLOB){
+    if(obj_type == NONE){
         throw runtime_error("Object type not implemented");
     }
-    CippBlob obj = CippBlob(reinterpret_cast<const char*>(string(buffer.begin(), buffer.end()).c_str()), size);
-    vector<unsigned char> blob_data = obj.serialize();
+    if(obj_type == BLOB){
+        obj = CippBlob(reinterpret_cast<const char*>(string(buffer.begin(), buffer.end()).c_str()), size);
+        obj_data = obj.serialize();
+    }else if(obj_type == COMMIT){
+        obj = CippCommit(buffer);
+        obj_data = obj.serialize();
+    }else if(obj_type == TREE){
+        obj = CippTree(buffer);
+        obj_data = obj.serialize();
+    }else if(obj_type == TAG){
+        obj = CippTag(buffer);
+        obj_data = obj.serialize();
+    }
     
-    
-    sha = CippObject::object_write(repo, obj, blob_data, write_enable);
+    sha = CippObject::object_write(repo, obj, obj_data, write_enable);
 
     
     return sha;
@@ -175,8 +231,41 @@ vector<raw_t> CippObject::object_resolve(CippRepository& repo, string& name){
     }
 
 
+    // If it's a hex string, try for a hash.
+    if (std::regex_match(name, hash_re)){
+        //converts the name to lower
+        transform(name.begin(), name.end(), name.begin(), ::tolower);
 
+        string prefix = string(name.begin(), name.begin()+2);
 
+        auto path = CippRepository::repo_dir(repo, "objects" + prefix);
+        if(!path.empty()){
+            string remainder = string(name.begin()+2, name.end());
+            for(auto files : filesystem::directory_iterator(path)){
+                if(files.path().filename().string().find(remainder) == 0){
+                    //this line is nasty I should probably have a better way to move files throughout memory.
+                    //this whole program takes a large amount of memory
+                    raw_t object = raw_t(prefix.begin(), prefix.end());
+                    raw_t hash = raw_t(files.path().filename().string().begin(), files.path().filename().string().end());
+                    object.insert(object.end(), hash.begin(), hash.end());
+                    candidates.push_back(object);
+                    cout << "Object found!" << endl;
+                }
+            }
+        }
+    }
+
+    auto as_tag = ref_resolve(repo, "refs/tags/" + name);
+    if(!as_tag.empty()){
+        candidates.push_back(as_tag);
+    }
+
+    raw_t branch = ref_resolve(repo, "refs/heads/" + name);
+    if(!branch.empty()){
+        candidates.push_back(branch);
+    }
+
+    return candidates;
 }
 
 /** This function is recursive: it reads a key/value pair, then call
