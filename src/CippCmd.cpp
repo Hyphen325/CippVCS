@@ -228,6 +228,35 @@ int tag_cmd(Group& arguments, vector<FlagBase*> flags){
 }
 
 
+int rev_parse_cmd(args::Group& args, std::vector<args::FlagBase*> flags){
+    cout << "Rev Parse" << endl;
+    string type = "blob";
+    //finds the type of object to search for (default blob)
+    for(FlagBase* flag : flags){
+        //-type flag
+        if(dynamic_cast<ValueFlag<string>*>(flag)){
+            ValueFlag<string>* f = dynamic_cast<ValueFlag<string>*>(flag);
+            type = f->Get();
+        }
+    }
+    
+    //name of the object to search for
+    string name;
+    for(auto arg : args.GetAllPositional()){
+        //checks of off the name of the argument
+        if(arg->Name() == "name"){
+            if(auto name_arg = dynamic_cast<Positional<string>*>(arg)){
+                name = name_arg->Get();
+            }
+        }
+    }
+
+    CippRepository repo = CippRepository::repo_find();
+    cout << CippObject::object_find(repo, name, (object_type_map.find(type))->second, true) << endl;
+    return 0;
+}
+
+
 
 /*Helper functions*/
 /*----------------------------------------------------------------------------------------*/
@@ -276,6 +305,9 @@ raw_t ref_resolve(CippRepository repo, filesystem::path path = ""){
     if(filesystem::is_directory(path)){
         return raw_t();
     }
+    if(!filesystem::exists(path)){
+        return raw_t();
+    }
 
     //creates a file reader
     ifstream reader(path);
@@ -288,9 +320,8 @@ raw_t ref_resolve(CippRepository repo, filesystem::path path = ""){
     reader.close();
 
     //buffer now contains all data from the file.
-
     if(buffer[0] == 'r' && buffer[1] == 'e' && buffer[2] == 'f' && buffer[3] ==':' && buffer[4] == ' '){
-        return ref_resolve(repo, string(buffer.begin()+5, buffer.end()));
+        return ref_resolve(repo, ".git/" + string(buffer.begin()+5, buffer.end()));
     }else{
         return buffer;
     }
@@ -347,7 +378,7 @@ std::unordered_map<std::filesystem::path, std::any> ref_list(CippRepository repo
             ret[can] = ref_list(repo, can);
         }else{
             //sets ret[f] to be a raw_t
-            ret[can] = ref_resolve(repo, can);
+            ret[can] = ref_resolve(repo, ".git/" / can);
         }
     }
 

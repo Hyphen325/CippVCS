@@ -111,10 +111,10 @@ string CippObject::object_find(CippRepository& repo, string name, CippObjectType
     
     vector<raw_t> sha_list = object_resolve(repo, name);
     if(sha_list.empty()){
-        throw new runtime_error("No such reference " + name);
+        throw runtime_error("No such reference " + name);
     }
     if(sha_list.size() > 1){
-        throw new runtime_error("Ambiguous reference " + name );
+        throw runtime_error("Ambiguous reference " + name );
     }
 
     raw_t sha = sha_list[0];
@@ -226,7 +226,11 @@ vector<raw_t> CippObject::object_resolve(CippRepository& repo, string& name){
     std::regex hash_re("^[0-9A-Fa-f]{4,40}$");
 
     if(name == "HEAD"){
-        candidates.push_back(ref_resolve(repo, "HEAD"));
+        cout << "Inserting HEAD" << endl;
+        auto head = ref_resolve(repo, repo.gitdir/ "/HEAD");
+        if(!head.empty()){
+            candidates.push_back(head);
+        }
         return candidates;
     }
 
@@ -255,12 +259,12 @@ vector<raw_t> CippObject::object_resolve(CippRepository& repo, string& name){
         }
     }
 
-    auto as_tag = ref_resolve(repo, "refs/tags/" + name);
+    auto as_tag = ref_resolve(repo, ".git/refs/tags/" + name);
     if(!as_tag.empty()){
         candidates.push_back(as_tag);
     }
 
-    raw_t branch = ref_resolve(repo, "refs/heads/" + name);
+    raw_t branch = ref_resolve(repo, ".git/refs/heads/" + name);
     if(!branch.empty()){
         candidates.push_back(branch);
     }

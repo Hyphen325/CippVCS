@@ -66,6 +66,11 @@ int main(int argc, char **argv){
     Positional<string> tag_object(tag_args, "object", "The object the new tag will point to");
     Flag tag_create(tag_flags, "a", "Whether to create a tag object", {"a"});
 
+    Command rev_parse(commands, "rev-parse", "Parse revision (or other object) identifiers");
+    Group rev_parse_args(rev_parse, "args");
+    Group rev_parse_flags(rev_parse, "flags");
+    ValueFlag<std::string> rev_parse_type(rev_parse_flags, "type", "", {"cipp-type"});
+    Positional<std::string> rev_parse_name(rev_parse_args, "name", "The name to parse");
     
 
     /*Global arguments*/
@@ -98,6 +103,9 @@ int main(int argc, char **argv){
         }
         if(tag){
             tag_cmd(tag_args, tag_flags.GetAllFlags());
+        }
+        if(rev_parse){
+            rev_parse_cmd(rev_parse_args, rev_parse_flags.GetAllFlags());
         }
     }
     
