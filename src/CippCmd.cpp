@@ -250,6 +250,10 @@ int rev_parse_cmd(args::Group& args, std::vector<args::FlagBase*> flags){
             }
         }
     }
+    if(name.empty()){
+        cout << "Must provide a name!" << endl;
+        return 1;
+    }
 
     CippRepository repo = CippRepository::repo_find();
     cout << CippObject::object_find(repo, name, (object_type_map.find(type))->second, true) << endl;
